@@ -97,7 +97,6 @@ void editEquipment(EquipmentManager *equipmentManager) {
        "\n          Edit Equipment              \n"
        "----------------------------------------\n");
 
-  viewAllEquipments(equipmentManager);
   editId = getInt(1, equipmentManager->numEquipments,
                   "Enter the ID of the equipment to edit: ");
 
@@ -112,6 +111,18 @@ void editEquipment(EquipmentManager *equipmentManager) {
     puts("Equipment with that ID was not found");
     return;
   }
+  // Display current equipment details
+  puts("\nCurrent equipment details:");
+  printf("ID               : %d\n",
+         equipmentManager->equipments[foundEquipmentId].id);
+  printf("Name             : %s\n",
+         equipmentManager->equipments[foundEquipmentId].name);
+  printf("Type             : %s\n",
+         equipmentManager->equipments[foundEquipmentId].type);
+  printf("Status           : %s\n",
+         equipmentStatusToString(
+             equipmentManager->equipments[foundEquipmentId].status));
+
   inputName(newName, MAX_EQUIPMENT_NAME,
             "Enter new equipment name or 0 to keep current: ");
   inputSpaceType(newType, MAX_EQUIPMENT_TYPE,

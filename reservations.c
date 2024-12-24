@@ -261,28 +261,6 @@ void editReservation(ReservationManager *reservationManager,
   newNumParticipants = getInt(
       0, 10000, "Enter new number of participants or 0 to keep current: ");
 
-  if (findClientId > 0) {
-    reservationManager->reservations[foundReservationId].clientId =
-        findClientId;
-  }
-  if (findSpaceId > 0) {
-    reservationManager->reservations[foundReservationId].spaceId = findSpaceId;
-  }
-  if (newDuration > 0) {
-    reservationManager->reservations[foundReservationId].duration = newDuration;
-  }
-  if (newStatus != -1) {
-    reservationManager->reservations[foundReservationId].status = newStatus;
-  }
-  if (newNumParticipants > 0) {
-    reservationManager->reservations[foundReservationId].numParticipants =
-        newNumParticipants;
-  }
-  if (newReservationDate.tm_year != 0) {
-    reservationManager->reservations[foundReservationId].reservationDate =
-        newReservationDate;
-  }
-
   reservationManager->unsavedReservations++;
 
   clearConsole();
