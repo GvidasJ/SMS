@@ -264,15 +264,15 @@ void equipmentsMenu(EquipmentManager *manager) {
       break;
     case 2:
       clearConsole();
-      // addNewEquipment(manager);
+      addNewEquipment(manager);
       break;
     case 3:
       clearConsole();
-      // editEquipment(manager);
+      editEquipment(manager);
       break;
     case 4:
       clearConsole();
-      // deleteEquipment(manager);
+      deleteEquipment(manager);
       break;
     case 5:
       clearConsole();
