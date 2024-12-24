@@ -9,13 +9,14 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager,
              ReservationManager *reservationsManager,
              EquipmentManager *equipmentManager) {
   if (!spacesManager->fileLoaded || !clientManager->fileLoaded ||
-      !reservationsManager->fileLoaded) {
+      !reservationsManager->fileLoaded || !equipmentManager->fileLoaded) {
     puts("No file has been loaded, please load a file first");
     return -1;
   }
 
   if (spacesManager->unsavedSpaces == 0 && clientManager->unsavedClients == 0 &&
-      reservationsManager->unsavedReservations == 0) {
+      reservationsManager->unsavedReservations == 0 &&
+      equipmentManager->unsavedEquipments == 0) {
     puts("No new data to save.");
     return 0;
   }

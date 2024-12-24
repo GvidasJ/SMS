@@ -119,6 +119,16 @@ int inputNif(ClientManager clientManager) {
   } while (check == 0);
   return nif;
 }
-int inputID(const int min, int max, char *msg){
-  return getInt(min, max, msg);
+int inputID(const int min, int max, char *msg) { return getInt(min, max, msg); }
+
+void inputDate(struct tm *date) {
+  int year, month, day;
+
+  year = getInt(2024, 2100, "Enter year in a range of 2024-2100: ");
+  month = getInt(1, 12, "Enter month 1-12: ");
+  day = getInt(1, 31, "Enter day 1-31:");
+
+  date->tm_year = year - 1900;
+  date->tm_mon = month - 1;
+  date->tm_mday = day;
 }

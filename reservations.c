@@ -26,7 +26,7 @@ void viewAllReservations(ReservationManager *reservationManager) {
 
     // format and display date
     char dateBuffer[20];
-    strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d %H:%M",
+    strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d",
              &reservationManager->reservations[i].reservationDate);
     printf("Reservation Date: %s\n", dateBuffer);
 
@@ -77,16 +77,17 @@ void addNewReservation(ReservationManager *reservationManager,
        "\n             Add New Reservation            \n"
        "----------------------------------------\n");
 
-  viewAllSpaces(spacesManager);
-
   // Input details for new reservation
   findClientId = inputID(1, clientManager->numClients, "Enter client ID: ");
   findSpaceId = inputID(1, spacesManager->numSpaces, "Enter space ID: ");
+
+  puts("\nEnter reservation date:");
+  inputDate(&newReservationDate);
+
   newDuration = getInt(1, 12, "Enter duration (hours): ");
   newStatus = getInt(
       0, 3,
       "Enter status (0: Pending, 1: Confirmed, 2: Completed, 3: Canceled): ");
-  newNumParticipants = getInt(0, 10000, "Enter number of participants: ");
 
   Space selectedSpace =
       spacesManager
@@ -99,15 +100,12 @@ void addNewReservation(ReservationManager *reservationManager,
     }
   } while (newNumParticipants > selectedSpace.capacity);
 
-  // Get current date
-  time_t t = time(NULL);
-  struct tm *currentTime = localtime(&t);
   // Create new reservation
   Reservation newReservation;
   newReservation.id = newId;
   newReservation.clientId = findClientId;
   newReservation.spaceId = findSpaceId;
-  newReservation.reservationDate = *currentTime;
+  newReservation.reservationDate = newReservationDate;
   newReservation.duration = newDuration;
   newReservation.status = newStatus;
   newReservation.numParticipants = newNumParticipants;
@@ -123,12 +121,10 @@ void addNewReservation(ReservationManager *reservationManager,
   printf("Reservation ID  : %d\n", newReservation.id);
   printf("Client ID       : %d\n", newReservation.clientId);
   printf("Space ID        : %d\n", newReservation.spaceId);
-  printf("Reservation Date: %02d/%02d/%d %02d:%02d\n",
+  printf("Reservation Date: %02d/%02d/%d\n",
          newReservation.reservationDate.tm_mday,
          newReservation.reservationDate.tm_mon + 1,
-         newReservation.reservationDate.tm_year + 1900,
-         newReservation.reservationDate.tm_hour,
-         newReservation.reservationDate.tm_min);
+         newReservation.reservationDate.tm_year + 1900);
   printf("Duration        : %d hours\n", newReservation.duration);
   printf("Status          : %s\n", statusToString(newReservation.status));
   printf("Participants    : %d\n", newReservation.numParticipants);

@@ -91,4 +91,7 @@ void inputEmail(char *email, int maxLength, const char *msg);
 int inputNif(ClientManager clientManager);
 int inputID(const int min, int max, char *msg);
 
+// Reservation
+void inputDate(struct tm *date);
+
 #endif
