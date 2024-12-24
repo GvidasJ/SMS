@@ -64,6 +64,23 @@ typedef struct {
 
 void inputName(char *name, int maxLength, const char *msg);
 
+// Equipments Struct
+typedef enum { AVAILABLE, RESERVED, UNDER_MAINTENANCE } EquipmentStatus;
+
+typedef struct {
+  int id;
+  char name[MAX_NAME_LENGTH];
+  char type[MAX_TYPE_LENGTH];
+  EquipmentStatus status;
+} Equipment;
+
+typedef struct {
+  Equipment *equipments;
+  int numEquipments;
+  int unsavedEquipments;
+  int fileLoaded;
+} EquipmentManager;
+
 // Spaces
 int inputSpaceCapacity(const char *msg, int min, int max);
 void inputSpaceType(char *type, int maxLength, const char *msg);

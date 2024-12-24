@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "clients.h"
+#include "equipment.h"
 #include "input.h"
 #include "reports.h"
 #include "reservations.h"
@@ -11,7 +12,8 @@
 void manageEquipments() {}
 
 void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager,
-              ReservationManager *reservationsManager) {
+              ReservationManager *reservationsManager,
+              EquipmentManager *equipmentManager) {
   int choice;
 
   do {
@@ -28,15 +30,18 @@ void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager,
     switch (choice) {
     case 1:
       clearConsole();
-      smsMenu(spaceManager, clientManager, reservationsManager);
+      smsMenu(spaceManager, clientManager, reservationsManager,
+              equipmentManager);
       break;
     case 2:
       clearConsole();
-      loadFile(spaceManager, clientManager, reservationsManager);
+      loadFile(spaceManager, clientManager, reservationsManager,
+               equipmentManager);
       break;
     case 3:
       clearConsole();
-      saveFile(spaceManager, clientManager, reservationsManager);
+      saveFile(spaceManager, clientManager, reservationsManager,
+               equipmentManager);
       break;
     case 4:
       clearConsole();
@@ -54,7 +59,8 @@ void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager,
 }
 
 void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager,
-             ReservationManager *reservationsManager) {
+             ReservationManager *reservationsManager,
+             EquipmentManager *equipmentManager) {
   int choice;
   do {
     choice = getInt(1, 6,
@@ -83,7 +89,8 @@ void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager,
       reservationsMenu(reservationsManager, clientManager, spaceManager);
       break;
     case 4:
-      manageEquipments();
+      clearConsole();
+      equipmentsMenu(equipmentManager);
       break;
     case 5:
       clearConsole();
@@ -235,6 +242,48 @@ void reservationsMenu(ReservationManager *reservationManager,
   } while (choice != 5);
 }
 
+void equipmentsMenu(EquipmentManager *manager) {
+  int choice;
+
+  do {
+    choice = getInt(1, 5,
+                    "----------------------------------------\n"
+                    "        Equipment Management        \n"
+                    "----------------------------------------\n"
+                    "1. View All Equipment\n"
+                    "2. Add New Equipment\n"
+                    "3. Update Existing Equipment\n"
+                    "4. Delete Equipment\n"
+                    "5. Back to Main Menu\n"
+                    "Please select an option 1-5: ");
+
+    switch (choice) {
+    case 1:
+      clearConsole();
+      viewAllEquipments(manager);
+      break;
+    case 2:
+      clearConsole();
+      // addNewEquipment(manager);
+      break;
+    case 3:
+      clearConsole();
+      // editEquipment(manager);
+      break;
+    case 4:
+      clearConsole();
+      // deleteEquipment(manager);
+      break;
+    case 5:
+      clearConsole();
+      return;
+    default:
+      clearConsole();
+      puts("Invalid choice. Please try again.\n");
+    }
+  } while (choice != 5);
+}
+
 void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
                      ReservationManager *reservationManager) {
   int choice;
@@ -294,7 +343,7 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
       break;
     case 9:
       clearConsole();
-      // reportEquipmentUsage(spaceManager);
+      reportSpaceOccupancyRate(reservationManager, spaceManager);
       break;
     case 10:
       clearConsole();

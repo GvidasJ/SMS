@@ -9,10 +9,11 @@ void clearConsole();
 void clearInputBuffer();
 void capitalizeWords(char *str);
 
-//inputs
+// inputs
 int getInt(int minValue, int maxValue, const char *msg);
 void readString(char *string, unsigned int size, const char *msg);
 char getChar(const char *msg);
 const char *statusToString(ReservationStatus status);
-#endif /* INPUT_H */
+const char *equipmentStatusToString(EquipmentStatus status);
 
+#endif /* INPUT_H */

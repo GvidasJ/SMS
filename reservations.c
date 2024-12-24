@@ -77,6 +77,8 @@ void addNewReservation(ReservationManager *reservationManager,
        "\n             Add New Reservation            \n"
        "----------------------------------------\n");
 
+  viewAllSpaces(spacesManager);
+
   // Input details for new reservation
   findClientId = inputID(1, clientManager->numClients, "Enter client ID: ");
   findSpaceId = inputID(1, spacesManager->numSpaces, "Enter space ID: ");
@@ -85,6 +87,17 @@ void addNewReservation(ReservationManager *reservationManager,
       0, 3,
       "Enter status (0: Pending, 1: Confirmed, 2: Completed, 3: Canceled): ");
   newNumParticipants = getInt(0, 10000, "Enter number of participants: ");
+
+  Space selectedSpace =
+      spacesManager
+          ->spaces[findSpaceId - 1]; // Assuming 1-based indexing for space IDs
+  do {
+    newNumParticipants = getInt(0, 10000, "Enter number of participants: ");
+    if (newNumParticipants > selectedSpace.capacity) {
+      printf("\n: Number of participants exceeds the space capacity of %d\n",
+             selectedSpace.capacity);
+    }
+  } while (newNumParticipants > selectedSpace.capacity);
 
   // Get current date
   time_t t = time(NULL);

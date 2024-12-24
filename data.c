@@ -1,16 +1,21 @@
 #include "data.h"
+#include "equipment.h"
 #include "utilities.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int saveFile(SpaceManager *spacesManager, ClientManager *clientManager, ReservationManager *reservationsManager) {
-  if (!spacesManager->fileLoaded || !clientManager->fileLoaded || !reservationsManager->fileLoaded) {
+int saveFile(SpaceManager *spacesManager, ClientManager *clientManager,
+             ReservationManager *reservationsManager,
+             EquipmentManager *equipmentManager) {
+  if (!spacesManager->fileLoaded || !clientManager->fileLoaded ||
+      !reservationsManager->fileLoaded) {
     puts("No file has been loaded, please load a file first");
     return -1;
   }
 
-  if (spacesManager->unsavedSpaces == 0 && clientManager->unsavedClients == 0 && reservationsManager->unsavedReservations == 0) {
+  if (spacesManager->unsavedSpaces == 0 && clientManager->unsavedClients == 0 &&
+      reservationsManager->unsavedReservations == 0) {
     puts("No new data to save.");
     return 0;
   }
@@ -35,22 +40,42 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager, Reservat
   for (int i = 0; i < clientManager->numClients; i++) {
     fwrite(&clientManager->clients[i].id, sizeof(int), 1, file);
     fwrite(clientManager->clients[i].name, sizeof(char), MAX_NAME_LENGTH, file);
-    fwrite(clientManager->clients[i].phoneNumber, sizeof(char), MAX_PHONE_LENGTH, file);
-    fwrite(clientManager->clients[i].email, sizeof(char), MAX_EMAIL_LENGTH, file);
+    fwrite(clientManager->clients[i].phoneNumber, sizeof(char),
+           MAX_PHONE_LENGTH, file);
+    fwrite(clientManager->clients[i].email, sizeof(char), MAX_EMAIL_LENGTH,
+           file);
     fwrite(&clientManager->clients[i].nif, sizeof(int), 1, file);
-    fwrite(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1, file);
+    fwrite(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1,
+           file);
   }
 
   // Reservations
   fwrite(&reservationsManager->numReservations, sizeof(int), 1, file);
   for (int i = 0; i < reservationsManager->numReservations; i++) {
     fwrite(&reservationsManager->reservations[i].id, sizeof(int), 1, file);
-    fwrite(&reservationsManager->reservations[i].clientId, sizeof(int), 1, file);
+    fwrite(&reservationsManager->reservations[i].clientId, sizeof(int), 1,
+           file);
     fwrite(&reservationsManager->reservations[i].spaceId, sizeof(int), 1, file);
-    fwrite(&reservationsManager->reservations[i].reservationDate, sizeof(struct tm), 1, file);
-    fwrite(&reservationsManager->reservations[i].duration, sizeof(int), 1, file);
-    fwrite(&reservationsManager->reservations[i].status, sizeof(ReservationStatus), 1, file);
-    fwrite(&reservationsManager->reservations[i].numParticipants, sizeof(int), 1, file);
+    fwrite(&reservationsManager->reservations[i].reservationDate,
+           sizeof(struct tm), 1, file);
+    fwrite(&reservationsManager->reservations[i].duration, sizeof(int), 1,
+           file);
+    fwrite(&reservationsManager->reservations[i].status,
+           sizeof(ReservationStatus), 1, file);
+    fwrite(&reservationsManager->reservations[i].numParticipants, sizeof(int),
+           1, file);
+  }
+
+  // Equipment
+  fwrite(&equipmentManager->numEquipments, sizeof(int), 1, file);
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    fwrite(&equipmentManager->equipments[i].id, sizeof(int), 1, file);
+    fwrite(equipmentManager->equipments[i].name, sizeof(char),
+           MAX_EQUIPMENT_NAME, file);
+    fwrite(equipmentManager->equipments[i].type, sizeof(char),
+           MAX_EQUIPMENT_TYPE, file);
+    fwrite(&equipmentManager->equipments[i].status, sizeof(EquipmentStatus), 1,
+           file);
   }
 
   fclose(file);
@@ -58,11 +83,14 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager, Reservat
   clientManager->unsavedClients = 0;
   spacesManager->unsavedSpaces = 0;
   reservationsManager->unsavedReservations = 0;
+  equipmentManager->unsavedEquipments = 0;
+
   return 0;
 }
 
-
-int loadFile(SpaceManager *spacesManager, ClientManager *clientManager, ReservationManager *reservationsManager) {
+int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
+             ReservationManager *reservationsManager,
+             EquipmentManager *equipmentManager) {
   // Free existing memory if any
   if (spacesManager->spaces != NULL) {
     free(spacesManager->spaces);
@@ -95,10 +123,13 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager, Reservat
   // Read spaces data
   for (int index = 0; index < spacesManager->numSpaces; index++) {
     fread(&spacesManager->spaces[index].id, sizeof(int), 1, file);
-    fread(spacesManager->spaces[index].name, sizeof(char), MAX_NAME_LENGTH, file);
-    spacesManager->spaces[index].name[MAX_NAME_LENGTH - 1] = '\0'; // mark the end of the string
+    fread(spacesManager->spaces[index].name, sizeof(char), MAX_NAME_LENGTH,
+          file);
+    spacesManager->spaces[index].name[MAX_NAME_LENGTH - 1] =
+        '\0'; // mark the end of the string
 
-    fread(spacesManager->spaces[index].type, sizeof(char), MAX_TYPE_LENGTH, file);
+    fread(spacesManager->spaces[index].type, sizeof(char), MAX_TYPE_LENGTH,
+          file);
     spacesManager->spaces[index].type[MAX_TYPE_LENGTH - 1] = '\0';
 
     fread(&spacesManager->spaces[index].capacity, sizeof(int), 1, file);
@@ -111,39 +142,69 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager, Reservat
   for (int i = 0; i < clientManager->numClients; i++) {
     fread(&clientManager->clients[i].id, sizeof(int), 1, file);
     fread(clientManager->clients[i].name, sizeof(char), MAX_NAME_LENGTH, file);
-    clientManager->clients[i].name[MAX_NAME_LENGTH - 1] = '\0'; // Null-terminate the string
+    clientManager->clients[i].name[MAX_NAME_LENGTH - 1] =
+        '\0'; // Null-terminate the string
 
-    fread(clientManager->clients[i].phoneNumber, sizeof(char), MAX_PHONE_LENGTH, file);
-    clientManager->clients[i].phoneNumber[MAX_PHONE_LENGTH - 1] = '\0'; // Null-terminate the string
+    fread(clientManager->clients[i].phoneNumber, sizeof(char), MAX_PHONE_LENGTH,
+          file);
+    clientManager->clients[i].phoneNumber[MAX_PHONE_LENGTH - 1] =
+        '\0'; // Null-terminate the string
 
-    fread(clientManager->clients[i].email, sizeof(char), MAX_EMAIL_LENGTH, file);
-    clientManager->clients[i].email[MAX_EMAIL_LENGTH - 1] = '\0'; // Null-terminate the string
+    fread(clientManager->clients[i].email, sizeof(char), MAX_EMAIL_LENGTH,
+          file);
+    clientManager->clients[i].email[MAX_EMAIL_LENGTH - 1] =
+        '\0'; // Null-terminate the string
 
     fread(&clientManager->clients[i].nif, sizeof(int), 1, file);
-    fread(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1, file); // Load registration date
+    fread(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1,
+          file); // Load registration date
   }
 
   // Read reservations data
   fread(&reservationsManager->numReservations, sizeof(int), 1, file);
-  reservationsManager->reservations = malloc(reservationsManager->numReservations * sizeof(Reservation));
+  reservationsManager->reservations =
+      malloc(reservationsManager->numReservations * sizeof(Reservation));
 
   for (int i = 0; i < reservationsManager->numReservations; i++) {
     fread(&reservationsManager->reservations[i].id, sizeof(int), 1, file);
     fread(&reservationsManager->reservations[i].clientId, sizeof(int), 1, file);
     fread(&reservationsManager->reservations[i].spaceId, sizeof(int), 1, file);
-    fread(&reservationsManager->reservations[i].reservationDate, sizeof(struct tm), 1, file);
+    fread(&reservationsManager->reservations[i].reservationDate,
+          sizeof(struct tm), 1, file);
     fread(&reservationsManager->reservations[i].duration, sizeof(int), 1, file);
-    fread(&reservationsManager->reservations[i].status, sizeof(ReservationStatus), 1, file);
-    fread(&reservationsManager->reservations[i].numParticipants, sizeof(int), 1, file);
+    fread(&reservationsManager->reservations[i].status,
+          sizeof(ReservationStatus), 1, file);
+    fread(&reservationsManager->reservations[i].numParticipants, sizeof(int), 1,
+          file);
+  }
+  // Read equipments data
+  fread(&equipmentManager->numEquipments, sizeof(int), 1, file);
+  equipmentManager->equipments =
+      malloc(equipmentManager->numEquipments * sizeof(Equipment));
+
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    fread(&equipmentManager->equipments[i].id, sizeof(int), 1, file);
+    fread(equipmentManager->equipments[i].name, sizeof(char),
+          MAX_EQUIPMENT_NAME, file);
+    equipmentManager->equipments[i].name[MAX_EQUIPMENT_NAME - 1] = '\0';
+
+    fread(equipmentManager->equipments[i].type, sizeof(char),
+          MAX_EQUIPMENT_TYPE, file);
+    equipmentManager->equipments[i].type[MAX_EQUIPMENT_TYPE - 1] = '\0';
+
+    fread(&equipmentManager->equipments[i].status, sizeof(EquipmentStatus), 1,
+          file);
   }
 
   spacesManager->fileLoaded = 1;
   clientManager->fileLoaded = 1;
   reservationsManager->fileLoaded = 1;
+  equipmentManager->fileLoaded = 1;
 
   spacesManager->unsavedSpaces = 0;
   clientManager->unsavedClients = 0;
   reservationsManager->unsavedReservations = 0;
+  equipmentManager->unsavedEquipments = 0;
 
   fclose(file);
   puts("Loaded files");

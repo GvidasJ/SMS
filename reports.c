@@ -1,4 +1,6 @@
 #include "reports.h"
+#include "input.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -144,20 +146,54 @@ void reportReservationsByDate(ReservationManager *reservationManager) {
     strftime(dateStr, sizeof(dateStr), "%Y-%m-%d %H:%M",
              &reservationManager->reservations[i].reservationDate);
 
-    // Get enum value as a string
-    const char *status;
-    if (reservationManager->reservations[i].status == 0)
-      status = "Pending";
-    else if (reservationManager->reservations[i].status == 1)
-      status = "Confirmed";
-    else if (reservationManager->reservations[i].status == 2)
-      status = "Completed";
-    else if (reservationManager->reservations[i].status == 3)
-      status = "Canceled";
-    else
-      status = "Unknown";
-
     printf("Date: %s | ID: %d | Status: %s\n", dateStr,
-           reservationManager->reservations[i].id, status);
+           reservationManager->reservations[i].id,
+           statusToString(reservationManager->reservations[i].status));
+  }
+}
+// FIX THIS LATER
+void reportSpaceOccupancyRate(ReservationManager *reservationManager,
+                              SpaceManager *spaceManager) {
+
+  if (!reservationManager->fileLoaded || !spaceManager->fileLoaded) {
+    puts("\nNo file loaded, please load a file first");
+    return;
+  }
+  if (reservationManager->unsavedReservations || spaceManager->unsavedSpaces) {
+    puts("\nPlease save file first, before getting all the reports");
+    return;
+  }
+
+  puts("----------------------------------------");
+  puts("           Space Occupancy Rate          ");
+  puts("----------------------------------------");
+
+  if (spaceManager->numSpaces == 0 ||
+      reservationManager->numReservations == 0) {
+    puts("No data available for occupancy calculation.");
+    return;
+  }
+
+  // For each space, calculate occupancy
+  for (int i = 0; i < spaceManager->numSpaces; i++) {
+    int totalHoursReserved = 0;
+    int totalReservations = 0;
+
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      if (reservationManager->reservations[j].spaceId ==
+              spaceManager->spaces[i].id &&
+          reservationManager->reservations[j].status == CONFIRMED) {
+        totalReservations++;
+        totalHoursReserved += reservationManager->reservations[j].duration;
+      }
+    }
+    double occupancyRate =
+        (double)totalReservations / spaceManager->spaces[i].capacity * 100;
+
+    printf("Space: %s (ID: %d)\n", spaceManager->spaces[i].name,
+           spaceManager->spaces[i].id);
+    printf("Total Reservations: %d\n", totalReservations);
+    printf("Occupancy Rate: %.1lf%%\n", occupancyRate);
+    puts("----------------------------------------");
   }
 }

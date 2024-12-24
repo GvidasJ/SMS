@@ -59,10 +59,27 @@ char getChar(const char *msg) {
 
 const char *statusToString(ReservationStatus status) {
   switch (status) {
-    case PENDING:   return "Pending";
-    case CONFIRMED: return "Confirmed";
-    case COMPLETED: return "Completed";
-    case CANCELED:  return "Canceled";
-    default:        return "Unknown";
+  case PENDING:
+    return "Pending";
+  case CONFIRMED:
+    return "Confirmed";
+  case COMPLETED:
+    return "Completed";
+  case CANCELED:
+    return "Canceled";
+  default:
+    return "Unknown";
+  }
+}
+const char *equipmentStatusToString(EquipmentStatus status) {
+  switch (status) {
+  case AVAILABLE:
+    return "Available";
+  case RESERVED:
+    return "Reserved";
+  case UNDER_MAINTENANCE:
+    return "Under Maintenance";
+  default:
+    return "Unknown";
   }
 }
