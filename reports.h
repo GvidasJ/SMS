@@ -10,5 +10,10 @@ void reportTotalSpaces(SpaceManager *spaceManager);
 //Clients
 void reportTotalClients(ClientManager *clientManager);
 
+//Reservation
+void reportReservationsByStatus(ReservationManager *reservationManager);
+void reportReservationsByDate(ReservationManager *reservationManager);
+void reportSpaceOccupancyRate(ReservationManager *reservationManager, SpaceManager *spaceManager);
+
 
 #endif

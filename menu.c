@@ -1,16 +1,17 @@
-#include "utilities.h"
 #include "menu.h"
 #include "clients.h"
 #include "input.h"
 #include "reports.h"
-#include "spaces.h"
 #include "reservations.h"
+#include "spaces.h"
+#include "utilities.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 void manageEquipments() {}
 
-void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager, ReservationManager *reservationsManager) {
+void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager,
+              ReservationManager *reservationsManager) {
   int choice;
 
   do {
@@ -52,7 +53,8 @@ void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager, Reservat
   } while (choice != 4);
 }
 
-void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager, ReservationManager *reservationsManager) {
+void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager,
+             ReservationManager *reservationsManager) {
   int choice;
   do {
     choice = getInt(1, 6,
@@ -85,7 +87,7 @@ void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager, Reservati
       break;
     case 5:
       clearConsole();
-      generateReports(spaceManager, clientManager);
+      generateReports(spaceManager, clientManager, reservationsManager);
       break;
     case 6:
       clearConsole();
@@ -187,7 +189,9 @@ void clientsMenu(ClientManager *clientManager) {
   } while (choice != 5);
 }
 
-void reservationsMenu(ReservationManager *reservationManager, ClientManager *clientManager, SpaceManager *spacesManager){
+void reservationsMenu(ReservationManager *reservationManager,
+                      ClientManager *clientManager,
+                      SpaceManager *spacesManager) {
   int choice;
 
   do {
@@ -231,13 +235,12 @@ void reservationsMenu(ReservationManager *reservationManager, ClientManager *cli
   } while (choice != 5);
 }
 
-void generateReports(SpaceManager *spaceManager, ClientManager *clientManager) {
+void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
+                     ReservationManager *reservationManager) {
   int choice;
 
-
-// Gvidas, what do you think about option to go back be "0"? Easier to type, just an idea.
   do {
-    choice = getInt(1, 10,
+    choice = getInt(0, 10,
                     "----------------------------------------"
                     "\n            Generate Reports           \n"
                     "----------------------------------------\n"
@@ -247,12 +250,13 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager) {
                     "4. Total Registered Clients \n"
                     "5. Client Reservation Details \n"
                     "6. Most Active Clients \n"
-                    "7. Reservations by Status and Date \n"
-                    "8. Space Occupancy Rate \n"
-                    "9. Equipment Usage Details \n"
-                    "10. Back to Main Menu \n"
+                    "7. Reservations by Status \n"
+                    "8. Reservations by Date \n"
+                    "9. Space Occupancy Rate \n"
+                    "10. Equipment Usage Details \n"
+                    "0. Back to Main Menu \n"
                     "----------------------------------------\n"
-                    "Please select an option (1-10): \n");
+                    "Please select an option (0-10): \n");
 
     switch (choice) {
     case 1:
@@ -282,11 +286,11 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager) {
       break;
     case 7:
       clearConsole();
-      // reportReservationsByStatusAndDate(spaceManager);
+      reportReservationsByStatus(reservationManager);
       break;
     case 8:
       clearConsole();
-      // reportOccupancyRate(spaceManager);
+      reportReservationsByDate(reservationManager);
       break;
     case 9:
       clearConsole();
@@ -301,5 +305,5 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager) {
       puts("Invalid choice. Please try again.\n");
       break;
     }
-  } while (choice != 10);
+  } while (choice != 0);
 }
