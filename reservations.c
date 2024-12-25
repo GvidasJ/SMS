@@ -95,7 +95,7 @@ void addNewReservation(ReservationManager *reservationManager,
   do {
     newNumParticipants = getInt(0, 10000, "Enter number of participants: ");
     if (newNumParticipants > selectedSpace.capacity) {
-      printf("\n: Number of participants exceeds the space capacity of %d\n",
+      printf("\nNumber of participants exceeds the space capacity of %d\n",
              selectedSpace.capacity);
     }
   } while (newNumParticipants > selectedSpace.capacity);

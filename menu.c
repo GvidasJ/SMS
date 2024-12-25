@@ -49,6 +49,7 @@ void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager,
       free(spaceManager->spaces);
       free(clientManager->clients);
       free(reservationsManager->reservations);
+      free(equipmentManager->equipments);
       return;
     default:
       clearConsole();
@@ -318,7 +319,7 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
       break;
     case 3:
       clearConsole();
-      // reportReservationTrends(spaceManager);
+      reportMostLeastReservedSpaces(reservationManager, spaceManager);
       break;
     case 4:
       clearConsole();
