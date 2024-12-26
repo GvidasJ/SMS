@@ -1,5 +1,6 @@
 #include "reports.h"
 #include "input.h"
+#include "utilities.h"
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -75,11 +76,9 @@ void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
   }
 
   int maxReservations = -1, minReservations = INT_MAX;
-  int maxSpaceId = -1, minSpaceId = -1;
 
-  // Process each space one at a time
+  // First pass: find max and min counts
   for (int i = 0; i < spacesManager->numSpaces; i++) {
-    // Count reservations for this space
     int currentSpaceReservations = 0;
     for (int j = 0; j < reservationManager->numReservations; j++) {
       if (reservationManager->reservations[j].status != CANCELED &&
@@ -88,38 +87,53 @@ void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
       }
     }
 
-    // Update max/min if needed
     if (currentSpaceReservations > maxReservations) {
       maxReservations = currentSpaceReservations;
-      maxSpaceId = i + 1;
     }
     if (currentSpaceReservations < minReservations) {
       minReservations = currentSpaceReservations;
-      minSpaceId = i + 1;
     }
   }
 
   // Display results
   clearConsole();
-  if (maxSpaceId != -1) {
-    printf("Most reserved space:\n");
-    printf("ID      : %d\n", spacesManager->spaces[maxSpaceId - 1].id);
-    printf("Name    : %s\n", spacesManager->spaces[maxSpaceId - 1].name);
-    printf("Type    : %s\n", spacesManager->spaces[maxSpaceId - 1].type);
-    printf("Reservations: %d\n", maxReservations);
-  } else {
-    puts("No reservations found.");
+
+  puts("Most reserved spaces:\n");
+  for (int i = 0; i < spacesManager->numSpaces; i++) {
+    int currentSpaceReservations = 0;
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      if (reservationManager->reservations[j].status != CANCELED &&
+          reservationManager->reservations[j].spaceId == (i + 1)) {
+        currentSpaceReservations++;
+      }
+    }
+
+    if (currentSpaceReservations == maxReservations) {
+      printf("\nID      : %d\n", spacesManager->spaces[i].id);
+      printf("Name    : %s\n", spacesManager->spaces[i].name);
+      printf("Type    : %s\n", spacesManager->spaces[i].type);
+      printf("Reservations: %d\n", maxReservations);
+    }
   }
 
-  if (minSpaceId != -1) {
-    printf("\nLeast reserved space:\n");
-    printf("ID      : %d\n", spacesManager->spaces[minSpaceId - 1].id);
-    printf("Name    : %s\n", spacesManager->spaces[minSpaceId - 1].name);
-    printf("Type    : %s\n", spacesManager->spaces[minSpaceId - 1].type);
-    printf("Reservations: %d\n", minReservations);
+  puts("\nLeast reserved spaces :\n");
+  for (int i = 0; i < spacesManager->numSpaces; i++) {
+    int currentSpaceReservations = 0;
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      if (reservationManager->reservations[j].status != CANCELED &&
+          reservationManager->reservations[j].spaceId == (i + 1)) {
+        currentSpaceReservations++;
+      }
+    }
+
+    if (currentSpaceReservations == minReservations) {
+      printf("\nID      : %d\n", spacesManager->spaces[i].id);
+      printf("Name    : %s\n", spacesManager->spaces[i].name);
+      printf("Type    : %s\n", spacesManager->spaces[i].type);
+      printf("Reservations: %d\n", minReservations);
+    }
   }
 }
-
 void reportTotalClients(ClientManager *clientManager) {
   // Check if the file is loaded and no unsaved changes
   if (!clientManager->fileLoaded) {
