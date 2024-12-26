@@ -9,6 +9,9 @@ void reportTotalSpaces(SpaceManager *spaceManager);
 
 //Clients
 void reportTotalClients(ClientManager *clientManager);
+void reportClientReservations(ClientManager *clientManager,
+                              ReservationManager *reservationManager,
+                              SpaceManager *spaceManager);
 
 //Reservation
 void reportReservationsByStatus(ReservationManager *reservationManager);

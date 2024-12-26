@@ -303,10 +303,12 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
                     "7. Reservations by Status \n"
                     "8. Reservations by Date \n"
                     "9. Space Occupancy Rate \n"
-                    "10. Equipment Usage Details \n"
+                    "10. Most and Least Used Equipment \n"
+                    "11. Equipment Usage Rate at Each Event \n"
+                    "12. Resource Management Efficiency \n"
                     "0. Back to Main Menu \n"
                     "----------------------------------------\n"
-                    "Please select an option (0-10): \n");
+                    "Please select an option 0-12: \n");
 
     switch (choice) {
     case 1:
@@ -324,11 +326,10 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
     case 4:
       clearConsole();
       reportTotalClients(clientManager);
-
       break;
     case 5:
       clearConsole();
-      // reportClientReservations(clientManager);
+      reportClientReservations(clientManager, reservationManager, spaceManager);
       break;
     case 6:
       clearConsole();
@@ -347,6 +348,18 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
       reportSpaceOccupancyRate(reservationManager, spaceManager);
       break;
     case 10:
+      clearConsole();
+      // reportMostLeastUsedEquipment(equipmentManager);
+      break;
+    case 11:
+      clearConsole();
+      // reportEquipmentUsageRate(equipmentManager);
+      break;
+    case 12:
+      clearConsole();
+      // reportResourceManagementEfficiency(equipmentManager);
+      break;
+    case 0:
       clearConsole();
       puts("Exiting Generate Reports Menu...\n");
       return;

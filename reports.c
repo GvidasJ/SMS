@@ -4,7 +4,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-
+// Spaces
 void reportTotalSpaces(SpaceManager *spaceManager) {
   if (!spaceManager->fileLoaded) {
     puts("\nNo file loaded, please load a file first");
@@ -134,6 +134,7 @@ void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
     }
   }
 }
+// Clients
 void reportTotalClients(ClientManager *clientManager) {
   // Check if the file is loaded and no unsaved changes
   if (!clientManager->fileLoaded) {
@@ -150,6 +151,59 @@ void reportTotalClients(ClientManager *clientManager) {
   puts("----------------------------------------");
   printf("Registered clients: %d\n", clientManager->numClients);
 }
+
+void reportClientReservations(ClientManager *clientManager,
+                              ReservationManager *reservationManager,
+                              SpaceManager *spaceManager) {
+  if (!clientManager->fileLoaded || !reservationManager->fileLoaded ||
+      !spaceManager->fileLoaded) {
+    puts("\nNo file loaded, please load a file first");
+    return;
+  }
+
+  if (clientManager->unsavedClients ||
+      reservationManager->unsavedReservations || spaceManager->unsavedSpaces) {
+    puts("\nPlease save file first, before getting all the reports");
+    return;
+  }
+
+  puts("----------------------------------------");
+  puts("          Clients Reservation Report          ");
+  puts("----------------------------------------");
+
+  for (int i = 0; i < clientManager->numClients; i++) {
+    int totalReservations = 0;
+
+    // First pass to count total reservations
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      if (reservationManager->reservations[j].clientId ==
+          clientManager->clients[i].id) {
+        totalReservations++;
+      }
+    }
+
+    if (totalReservations > 0) {
+      printf("Client %s (ID - %d)\n", clientManager->clients[i].name,
+             clientManager->clients[i].id);
+      printf("Total Reservations: %d\n", totalReservations);
+      puts("Spaces Used:");
+
+      // Second pass to print reservation details
+      for (int j = 0; j < reservationManager->numReservations; j++) {
+        if (reservationManager->reservations[j].clientId ==
+            clientManager->clients[i].id) {
+          char dateBuffer[20];
+          strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d",
+                   &reservationManager->reservations[j].reservationDate);
+          printf("- Space ID: %d, Reservation Date: %s\n",
+                 reservationManager->reservations[j].spaceId, dateBuffer);
+        }
+      }
+      puts("");
+    }
+  }
+}
+// Reservations
 void reportReservationsByStatus(ReservationManager *reservationManager) {
   if (!reservationManager->fileLoaded) {
     puts("\nNo file loaded, please load a file first");
