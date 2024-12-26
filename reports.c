@@ -69,14 +69,15 @@ void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
     return;
   }
 
-  if (spacesManager->numSpaces == 0 ||
-      reservationManager->numReservations == 0) {
+  if (spacesManager->unsavedSpaces || reservationManager->unsavedReservations) {
     puts("\nNo spaces or reservations available.");
     return;
   }
 
   int maxReservations = -1, minReservations = INT_MAX;
-
+  puts("----------------------------------------");
+  puts("          Most and Least Reserved Spaces                 ");
+  puts("----------------------------------------");
   // First pass: find max and min counts
   for (int i = 0; i < spacesManager->numSpaces; i++) {
     int currentSpaceReservations = 0;
@@ -95,8 +96,11 @@ void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
     }
   }
 
-  // Display results
-  clearConsole();
+  if (spacesManager->numSpaces == 0 ||
+      reservationManager->numReservations == 0) {
+    puts("\nNo spaces or reservations available.");
+    return;
+  }
 
   puts("Most reserved spaces:\n");
   for (int i = 0; i < spacesManager->numSpaces; i++) {
@@ -324,4 +328,47 @@ void reportSpaceOccupancyRate(ReservationManager *reservationManager,
     printf("Occupancy Rate: %.1lf%%\n", occupancyRate);
     puts("----------------------------------------");
   }
+}
+
+// Equipment
+void reportMostLeastUsedEquipment(EquipmentManager *equipmentManager) {
+  if (!equipmentManager->fileLoaded) {
+    puts("\nNo file loaded, please load a file first.");
+    return;
+  }
+
+  if (equipmentManager->unsavedEquipments) {
+    puts("\nNo equipment available.");
+    return;
+  }
+  int maxUsage = -1, minUsage = INT_MAX;
+  int mostUsedIdx = 0, leastUsedIdx = 0;
+  puts("----------------------------------------");
+  puts("          Most and Least Used Equipment                 ");
+  puts("----------------------------------------");
+
+  if (equipmentManager->numEquipments == 0) {
+    puts("\nNo equipment available.");
+    return;
+  }
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    int currentUsage = 0;
+    if (equipmentManager->equipments[i].status == RESERVED) {
+      currentUsage = 1;
+    }
+
+    if (currentUsage > maxUsage) {
+      maxUsage = currentUsage;
+      mostUsedIdx = i;
+    }
+    if (currentUsage < minUsage) {
+      minUsage = currentUsage;
+      leastUsedIdx = i;
+    }
+  }
+
+  printf("\nMost Used Equipment: %s (Used %d times)\n",
+         equipmentManager->equipments[mostUsedIdx].name, maxUsage);
+  printf("Least Used Equipment: %s (Used %d times)\n",
+         equipmentManager->equipments[leastUsedIdx].name, minUsage);
 }

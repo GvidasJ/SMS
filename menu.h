@@ -17,6 +17,7 @@ void reservationsMenu(ReservationManager *reservationsManager,
                       ClientManager *clientManager, SpaceManager *spaceManager);
 void equipmentsMenu(EquipmentManager *manager);
 void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
-                     ReservationManager *reservationManager);
+                     ReservationManager *reservationManager,
+                     EquipmentManager *equipmentManager);
 
 #endif

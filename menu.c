@@ -95,7 +95,8 @@ void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager,
       break;
     case 5:
       clearConsole();
-      generateReports(spaceManager, clientManager, reservationsManager);
+      generateReports(spaceManager, clientManager, reservationsManager,
+                      equipmentManager);
       break;
     case 6:
       clearConsole();
@@ -286,7 +287,8 @@ void equipmentsMenu(EquipmentManager *manager) {
 }
 
 void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
-                     ReservationManager *reservationManager) {
+                     ReservationManager *reservationManager,
+                     EquipmentManager *equipmentManager) {
   int choice;
 
   do {
@@ -349,7 +351,7 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
       break;
     case 10:
       clearConsole();
-      // reportMostLeastUsedEquipment(equipmentManager);
+      reportMostLeastUsedEquipment(equipmentManager);
       break;
     case 11:
       clearConsole();

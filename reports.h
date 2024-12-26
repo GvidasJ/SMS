@@ -19,4 +19,7 @@ void reportReservationsByDate(ReservationManager *reservationManager);
 void reportSpaceOccupancyRate(ReservationManager *reservationManager, SpaceManager *spaceManager);
 void reportMostLeastReservedSpaces(ReservationManager *reservationManager, SpaceManager *spacesManager);
 
+//Equipment
+void reportMostLeastUsedEquipment(EquipmentManager *equipmentManager);
+
 #endif
