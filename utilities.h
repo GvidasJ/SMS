@@ -8,6 +8,8 @@
 #define MAX_PHONE_LENGTH 15
 #define MAX_EMAIL_LENGTH 320
 
+typedef enum { ACTIVE, INACTIVE } EntitiesStatus;
+
 // Space Structs
 
 typedef struct {
@@ -15,6 +17,7 @@ typedef struct {
   char name[MAX_NAME_LENGTH];
   char type[MAX_TYPE_LENGTH];
   int capacity;
+  EntitiesStatus status;
 } Space;
 
 typedef struct {
@@ -22,6 +25,7 @@ typedef struct {
   int numSpaces;
   int unsavedSpaces;
   int fileLoaded;
+  int isActive;
 } SpaceManager;
 
 // Client Structs
@@ -60,6 +64,7 @@ typedef struct {
   int numReservations;
   int unsavedReservations;
   int fileLoaded;
+
 } ReservationManager;
 
 void inputName(char *name, int maxLength, const char *msg);

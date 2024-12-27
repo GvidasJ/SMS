@@ -218,7 +218,7 @@ void reservationsMenu(ReservationManager *reservationManager,
     switch (choice) {
     case 1:
       clearConsole();
-      viewAllReservations(reservationManager);
+      viewAllReservations(reservationManager, spacesManager);
       break;
     case 2:
       clearConsole();
@@ -230,7 +230,7 @@ void reservationsMenu(ReservationManager *reservationManager,
       break;
     case 4:
       clearConsole();
-      deleteReservation(reservationManager);
+      deleteReservation(reservationManager, spacesManager);
       break;
     case 5:
       clearConsole();

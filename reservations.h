@@ -3,9 +3,9 @@
 
 #include "utilities.h"
 
-void viewAllReservations(ReservationManager *reservationManager);
+void viewAllReservations(ReservationManager *reservationManager, SpaceManager *spaceManager);
 void addNewReservation(ReservationManager *reservationManager, ClientManager *clientManager, SpaceManager *spacesManager);
 void editReservation(ReservationManager *reservationManager, ClientManager *clientManager, SpaceManager *spacesManager);
-void deleteReservation(ReservationManager*reservationManager);
+void deleteReservation(ReservationManager*reservationManager, SpaceManager *spaceManager);
 
 #endif

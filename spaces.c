@@ -17,11 +17,16 @@ void viewAllSpaces(SpaceManager *spacesManager) {
        "----------------------------------------\n");
 
   for (int i = 0; i < spacesManager->numSpaces; i++) {
-    printf("ID      : %d\n", spacesManager->spaces[i].id);
-    printf("Name    : %s\n", spacesManager->spaces[i].name);
-    printf("Type    : %s\n", spacesManager->spaces[i].type);
-    printf("Capacity: %d\n", spacesManager->spaces[i].capacity);
-    puts("----------------------------------------\n");
+    if (spacesManager->spaces[i].id != -1) { // Only show non-deleted spaces
+      printf("ID      : %d\n", spacesManager->spaces[i].id);
+      printf("Name    : %s\n", spacesManager->spaces[i].name);
+      printf("Type    : %s\n", spacesManager->spaces[i].type);
+      printf("Capacity: %d\n", spacesManager->spaces[i].capacity);
+      printf("Status  : %s\n",
+             spacesManager->spaces[i].status == ACTIVE ? "ACTIVE" : "INACTIVE");
+
+      puts("----------------------------------------\n");
+    }
   }
   puts("End of spaces list\n");
 }
@@ -38,16 +43,41 @@ void addNewSpace(SpaceManager *spacesManager) {
   int newCapacity;
   Space *temp = NULL;
 
-  // If memory is empty, allocate space for the first element
-  if (spacesManager->spaces == NULL) {
-    temp = malloc(sizeof(Space));
-    spacesManager->spaces = temp;
-    newId = 1;
-  } else {
+  // Find the smallest available ID
+  newId = 1; // Start with the first possible ID
+  for (int i = 1; i <= spacesManager->numSpaces + 1; i++) {
+    int idExists = 0;
+    for (int j = 0; j < spacesManager->numSpaces; j++) {
+      if (spacesManager->spaces[j].id == i) {
+        idExists = 1;
+        break;
+      }
+    }
+    if (!idExists) {
+      newId = i; // Assign the first unused ID
+      break;
+    }
+  }
+
+  // Check for empty slots first
+  int emptySlot = -1;
+  for (int i = 0; i < spacesManager->numSpaces; i++) {
+    if (spacesManager->spaces[i].id == -1) {
+      emptySlot = i;
+      break;
+    }
+  }
+
+  if (emptySlot == -1) {
     temp = realloc(spacesManager->spaces,
                    (spacesManager->numSpaces + 1) * sizeof(Space));
+    if (temp == NULL) {
+      puts("Memory allocation failed!");
+      return;
+    }
     spacesManager->spaces = temp;
-    newId = spacesManager->numSpaces + 1;
+    emptySlot = spacesManager->numSpaces;
+    spacesManager->numSpaces++;
   }
 
   puts("----------------------------------------"
@@ -68,8 +98,8 @@ void addNewSpace(SpaceManager *spacesManager) {
   newSpace.capacity = newCapacity;
 
   // Add to spacesManager's array
-  spacesManager->spaces[spacesManager->numSpaces] = newSpace;
-  spacesManager->numSpaces++;
+  spacesManager->spaces[emptySlot] = newSpace;
+  // spacesManager->numSpaces++;
   spacesManager->unsavedSpaces++;
 
   clearConsole();
@@ -111,12 +141,18 @@ void deleteSpace(SpaceManager *spacesManager) {
   }
 
   // Shift spaces and change ID numbers to make them in order
-  for (int i = foundSpaceId; i < spacesManager->numSpaces - 1; i++) {
-    spacesManager->spaces[i] = spacesManager->spaces[i + 1];
-    spacesManager->spaces[i].id = i + 1;
+  // for (int i = foundSpaceId; i < spacesManager->numSpaces - 1; i++) {
+  //  spacesManager->spaces[i] = spacesManager->spaces[i + 1];
+  // spacesManager->spaces[i].id = i + 1;
+  //}
+
+  // Check if the space is active
+  if (spacesManager->spaces[foundSpaceId].status == ACTIVE) {
+    puts("Cannot delete space because its status is ACTIVE");
+    return;
   }
 
-  spacesManager->numSpaces--;
+  spacesManager->spaces[foundSpaceId].id = -1;
   spacesManager->unsavedSpaces++;
 
   if (spacesManager->numSpaces == 0) {
@@ -162,6 +198,11 @@ void editSpace(SpaceManager *spacesManager) {
 
   if (foundSpaceId == -1) {
     puts("Space with that ID was not found");
+    return;
+  }
+
+  if (spacesManager->spaces[foundSpaceId].status == ACTIVE) {
+    puts("Cannot edit an active space.");
     return;
   }
 
