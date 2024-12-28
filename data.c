@@ -134,6 +134,7 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
     spacesManager->spaces[index].type[MAX_TYPE_LENGTH - 1] = '\0';
 
     fread(&spacesManager->spaces[index].capacity, sizeof(int), 1, file);
+    spacesManager->nextId++;
   }
 
   // Read clients data
@@ -159,6 +160,7 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
     fread(&clientManager->clients[i].nif, sizeof(int), 1, file);
     fread(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1,
           file); // Load registration date
+    clientManager->nextId++;
   }
 
   // Read reservations data
@@ -177,6 +179,7 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
           sizeof(ReservationStatus), 1, file);
     fread(&reservationsManager->reservations[i].numParticipants, sizeof(int), 1,
           file);
+    reservationsManager->nextId++;
   }
   // Read equipments data
   fread(&equipmentManager->numEquipments, sizeof(int), 1, file);

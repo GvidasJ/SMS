@@ -52,13 +52,13 @@ void addNewClient(ClientManager *clientsManager) {
   if (clientsManager->clients == NULL) {
     temp = malloc(sizeof(Client));
     clientsManager->clients = temp;
-    newId = 1;
+    newId = clientsManager->nextId++;
   } else {
     Client *temp = realloc(clientsManager->clients,
-                           (clientsManager->numClients + 1) * sizeof(Client));
+                           ((clientsManager->nextId + 1) * sizeof(Client)));
     clientsManager->clients = temp;
 
-    newId = clientsManager->numClients + 1;
+    newId = clientsManager->nextId++;
   }
 
   puts("----------------------------------------"
@@ -125,8 +125,8 @@ void editClients(ClientManager *clientsManager) {
        "\n             Edit Client              \n"
        "----------------------------------------\n");
 
-  editId = getInt(1, clientsManager->numClients,
-                  "Enter the ID of the client to edit: ");
+  editId =
+      getInt(1, clientsManager->nextId, "Enter the ID of the client to edit: ");
 
   for (int i = 0; i < clientsManager->numClients; i++) {
     if (clientsManager->clients[i].id == editId) {
@@ -231,11 +231,11 @@ void deleteClient(ClientManager *clientsManager) {
     return;
   }
 
-  // Shift clients and change ID numbers to make them in order
+  // // Shift clients and change ID numbers to make them in order
   for (int i = foundSpaceId; i < clientsManager->numClients - 1; i++) {
     clientsManager->clients[i] = clientsManager->clients[i + 1];
-    clientsManager->clients[i].id = i + 1;
   }
+  //   clientsManager->clients[i].id = i + 1;
 
   clientsManager->numClients--;
   clientsManager->unsavedClients++;

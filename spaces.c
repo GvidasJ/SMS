@@ -43,41 +43,16 @@ void addNewSpace(SpaceManager *spacesManager) {
   int newCapacity;
   Space *temp = NULL;
 
-  // Find the smallest available ID
-  newId = 1; // Start with the first possible ID
-  for (int i = 1; i <= spacesManager->numSpaces + 1; i++) {
-    int idExists = 0;
-    for (int j = 0; j < spacesManager->numSpaces; j++) {
-      if (spacesManager->spaces[j].id == i) {
-        idExists = 1;
-        break;
-      }
-    }
-    if (!idExists) {
-      newId = i; // Assign the first unused ID
-      break;
-    }
-  }
-
-  // Check for empty slots first
-  int emptySlot = -1;
-  for (int i = 0; i < spacesManager->numSpaces; i++) {
-    if (spacesManager->spaces[i].id == -1) {
-      emptySlot = i;
-      break;
-    }
-  }
-
-  if (emptySlot == -1) {
-    temp = realloc(spacesManager->spaces,
-                   (spacesManager->numSpaces + 1) * sizeof(Space));
-    if (temp == NULL) {
-      puts("Memory allocation failed!");
-      return;
-    }
+  // If memory is empty, allocate Client for the first element
+  if (spacesManager->spaces == NULL) {
+    temp = malloc(sizeof(Space));
     spacesManager->spaces = temp;
-    emptySlot = spacesManager->numSpaces;
-    spacesManager->numSpaces++;
+    newId = spacesManager->nextId++;
+  } else {
+    temp = realloc(spacesManager->spaces,
+                   ((spacesManager->nextId + 1) * sizeof(Space)));
+    spacesManager->spaces = temp;
+    newId = spacesManager->nextId++;
   }
 
   puts("----------------------------------------"
@@ -96,10 +71,11 @@ void addNewSpace(SpaceManager *spacesManager) {
   newSpace.name[MAX_NAME_LENGTH - 1] = '\0';
   newSpace.type[MAX_TYPE_LENGTH - 1] = '\0';
   newSpace.capacity = newCapacity;
+  newSpace.status = ACTIVE;
 
   // Add to spacesManager's array
-  spacesManager->spaces[emptySlot] = newSpace;
-  // spacesManager->numSpaces++;
+  spacesManager->spaces[spacesManager->numSpaces] = newSpace;
+  spacesManager->numSpaces++;
   spacesManager->unsavedSpaces++;
 
   clearConsole();
@@ -124,8 +100,8 @@ void deleteSpace(SpaceManager *spacesManager) {
        "\n            Delete Space             \n"
        "----------------------------------------\n");
 
-  deleteId = getInt(1, spacesManager->numSpaces,
-                    "Enter the ID of the space to delete: ");
+  deleteId =
+      getInt(1, spacesManager->nextId, "Enter the ID of the space to delete: ");
 
   // Finding the ID
   for (int i = 0; i < spacesManager->numSpaces; i++) {
@@ -140,19 +116,18 @@ void deleteSpace(SpaceManager *spacesManager) {
     return;
   }
 
-  // Shift spaces and change ID numbers to make them in order
-  // for (int i = foundSpaceId; i < spacesManager->numSpaces - 1; i++) {
-  //  spacesManager->spaces[i] = spacesManager->spaces[i + 1];
-  // spacesManager->spaces[i].id = i + 1;
-  //}
-
-  // Check if the space is active
-  if (spacesManager->spaces[foundSpaceId].status == ACTIVE) {
-    puts("Cannot delete space because its status is ACTIVE");
+  // Check if the space is inactive
+  if (spacesManager->spaces[foundSpaceId].status == INACTIVE) {
+    puts("Cannot delete space because its status is INACTIVE");
     return;
   }
 
-  spacesManager->spaces[foundSpaceId].id = -1;
+  // Shift spaces and change ID numbers to make them in order
+  for (int i = foundSpaceId; i < spacesManager->numSpaces - 1; i++) {
+    spacesManager->spaces[i] = spacesManager->spaces[i + 1];
+  }
+
+  spacesManager->numSpaces--;
   spacesManager->unsavedSpaces++;
 
   if (spacesManager->numSpaces == 0) {
@@ -185,8 +160,8 @@ void editSpace(SpaceManager *spacesManager) {
        "\n             Edit Space              \n"
        "----------------------------------------\n");
 
-  editId = getInt(1, spacesManager->numSpaces,
-                  "Enter the ID of the space to edit: ");
+  editId =
+      getInt(1, spacesManager->nextId, "Enter the ID of the space to edit: ");
 
   // Finding the space to edit
   for (int i = 0; i < spacesManager->numSpaces; i++) {
@@ -201,8 +176,8 @@ void editSpace(SpaceManager *spacesManager) {
     return;
   }
 
-  if (spacesManager->spaces[foundSpaceId].status == ACTIVE) {
-    puts("Cannot edit an active space.");
+  if (spacesManager->spaces[foundSpaceId].status == INACTIVE) {
+    puts("Cannot edit an inactive space.");
     return;
   }
 

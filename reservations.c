@@ -74,14 +74,14 @@ void addNewReservation(ReservationManager *reservationManager,
   if (reservationManager->reservations == NULL) {
     temp = malloc(sizeof(Reservation));
     reservationManager->reservations = temp;
-    newId = 1;
+    newId = reservationManager->nextId++;
   } else {
-    Reservation *temp = realloc(reservationManager->reservations,
-                                (reservationManager->numReservations + 1) *
-                                    sizeof(Reservation));
+    temp = realloc(reservationManager->reservations,
+                   (reservationManager->nextId + 1) * sizeof(Reservation));
+
     reservationManager->reservations = temp;
 
-    newId = reservationManager->numReservations + 1;
+    newId = reservationManager->nextId++;
   }
   // Input details for new reservation
   puts("----------------------------------------"
@@ -106,8 +106,8 @@ void addNewReservation(ReservationManager *reservationManager,
       continue;
     }
 
-    if (selectedSpace->status == ACTIVE) {
-      printf("Space ID %d is already active with another reservation. Please "
+    if (selectedSpace->status == INACTIVE) {
+      printf("Space ID %d is in-active with another reservation. Please "
              "select another space.\n",
              findSpaceId);
     } else {
@@ -145,9 +145,9 @@ void addNewReservation(ReservationManager *reservationManager,
   printf("ReservationStatus %d", newReservation.status);
 
   if (newStatus == PENDING || newStatus == CONFIRMED) {
-    selectedSpace->status = ACTIVE;
-  } else {
     selectedSpace->status = INACTIVE;
+  } else {
+    selectedSpace->status = ACTIVE;
   }
 
   // Add to reservationManager's array
@@ -156,7 +156,6 @@ void addNewReservation(ReservationManager *reservationManager,
   reservationManager->numReservations++;
   reservationManager->unsavedReservations++;
 
-  selectedSpace->status = ACTIVE;
   spacesManager->unsavedSpaces++;
 
   // selectedClient->status = ACTIVE;
@@ -208,21 +207,27 @@ void deleteReservation(ReservationManager *reservationManager,
     return;
   }
 
-  int spaceId = reservationManager->reservations[foundReservationId].spaceId;
-  Space *affectedSpace = &spacesManager->spaces[spaceId - 1];
-  affectedSpace->status = INACTIVE;
-  spacesManager->unsavedSpaces++;
+  for (int i = foundReservationId; i < reservationManager->numReservations - 1;
+       i++) {
+    reservationManager->reservations[i] =
+        reservationManager->reservations[i + 1];
+  }
 
-  // Shift reservations and change ID numbers to make them in order
-  // for (int i = foundReservationId; i < reservationManager->numReservations -
-  // 1;
-  //      i++) {
-  //   reservationManager->reservations[i] =
-  //       reservationManager->reservations[i + 1];
-  //   reservationManager->reservations[i].id = i + 1;
-  // }
+  // Check reservation status before allowing deletion
+  ReservationStatus status =
+      reservationManager->reservations[foundReservationId].status;
+  if (status == PENDING || status == CONFIRMED) {
+    if (status == PENDING) {
+      puts("Cannot delete a pending reservation, please cancel or confirm it "
+           "first");
+    } else {
+      puts("Cannot delete a confirmed reservation, please wait until it's "
+           "completed or canceled");
+    }
+    return;
+  }
 
-  // reservationManager->numReservations--;
+  reservationManager->numReservations--;
   reservationManager->unsavedReservations++;
 
   if (reservationManager->numReservations == 0) {
@@ -342,9 +347,9 @@ void editReservation(ReservationManager *reservationManager,
   }
   if (newStatus >= 0) {
     reservationManager->reservations[foundReservationId].status = newStatus;
-
+    printf("NEw status of the space: %d", newStatus);
     space->status =
-        (newStatus == CANCELED || newStatus == CONFIRMED) ? INACTIVE : ACTIVE;
+        (newStatus == CANCELED || newStatus == COMPLETED) ? ACTIVE : INACTIVE;
     spacesManager->unsavedSpaces++;
   }
   if (newNumParticipants > 0) {

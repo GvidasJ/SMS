@@ -26,6 +26,7 @@ typedef struct {
   int unsavedSpaces;
   int fileLoaded;
   int isActive;
+  int nextId;
 } SpaceManager;
 
 // Client Structs
@@ -44,6 +45,8 @@ typedef struct {
   int numClients;
   int unsavedClients;
   int fileLoaded;
+  int isActive;
+  int nextId;
 } ClientManager;
 
 // Reservation Structs
@@ -64,6 +67,7 @@ typedef struct {
   int numReservations;
   int unsavedReservations;
   int fileLoaded;
+  int nextId;
 
 } ReservationManager;
 
