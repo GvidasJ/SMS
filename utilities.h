@@ -38,6 +38,7 @@ typedef struct {
   char email[MAX_EMAIL_LENGTH];
   int nif;
   struct tm registrationDate;
+  EntitiesStatus status;
 } Client;
 
 typedef struct {

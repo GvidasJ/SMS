@@ -14,7 +14,7 @@ void viewAllClients(ClientManager *clientManager) {
   }
 
   puts("----------------------------------------"
-       "\n          Your Clients          \n"
+       "\n          All Clients          \n"
        "----------------------------------------\n");
 
   for (int i = 0; i < clientManager->numClients; i++) {
@@ -23,6 +23,9 @@ void viewAllClients(ClientManager *clientManager) {
     printf("Phone Number: %s\n", clientManager->clients[i].phoneNumber);
     printf("Email: %s\n", clientManager->clients[i].email);
     printf("NIF: %d\n", clientManager->clients[i].nif);
+    printf("Status: %s\n", clientManager->clients[i].status == ACTIVE
+                               ? "ACTIVE"
+                               : "INACTIVE"); // Add this line
 
     // format and display date
     char dateBuffer[20];
@@ -86,6 +89,7 @@ void addNewClient(ClientManager *clientsManager) {
   newClient.phoneNumber[MAX_PHONE_LENGTH - 1] = '\0';
   newClient.email[MAX_EMAIL_LENGTH - 1] = '\0';
   newClient.registrationDate = *currentTime;
+  newClient.status = ACTIVE;
 
   // Add to manager's array
   clientsManager->clients[clientsManager->numClients] = newClient;
@@ -137,6 +141,11 @@ void editClients(ClientManager *clientsManager) {
 
   if (foundClientId == -1) {
     puts("Client with that ID was not found");
+    return;
+  }
+
+  if (clientsManager->clients[foundClientId].status == INACTIVE) {
+    puts("Cannot edit an inactive client.");
     return;
   }
 
@@ -228,6 +237,11 @@ void deleteClient(ClientManager *clientsManager) {
 
   if (foundSpaceId == -1) {
     puts("Client with that ID was not found");
+    return;
+  }
+
+  if (clientsManager->clients[foundSpaceId].status == INACTIVE) {
+    puts("Cannot delete client because their status is INACTIVE");
     return;
   }
 

@@ -13,7 +13,7 @@ void viewAllSpaces(SpaceManager *spacesManager) {
   }
 
   puts("----------------------------------------"
-       "\n          Available Spaces          \n"
+       "\n          All Spaces          \n"
        "----------------------------------------\n");
 
   for (int i = 0; i < spacesManager->numSpaces; i++) {
@@ -43,7 +43,6 @@ void addNewSpace(SpaceManager *spacesManager) {
   int newCapacity;
   Space *temp = NULL;
 
-  // If memory is empty, allocate Client for the first element
   if (spacesManager->spaces == NULL) {
     temp = malloc(sizeof(Space));
     spacesManager->spaces = temp;

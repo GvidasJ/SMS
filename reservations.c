@@ -8,7 +8,8 @@
 #include <time.h>
 
 void viewAllReservations(ReservationManager *reservationManager,
-                         SpaceManager *spacesManager) {
+                         SpaceManager *spacesManager,
+                         ClientManager *clientsManager) {
   if (!reservationManager->fileLoaded) {
     puts("No reservations loaded, please load file first.");
     return;
@@ -20,7 +21,9 @@ void viewAllReservations(ReservationManager *reservationManager,
 
   for (int i = 0; i < reservationManager->numReservations; i++) {
     int spaceId = reservationManager->reservations[i].spaceId;
+    int clientId = reservationManager->reservations[i].clientId;
     int spaceExists = 0;
+    int clientsExists = 0;
 
     // Check if the spaceId exists in spacesManager
     for (int j = 0; j < spacesManager->numSpaces; j++) {
@@ -30,9 +33,20 @@ void viewAllReservations(ReservationManager *reservationManager,
       }
     }
 
+    // Check if the clientId exists in clientsManager
+    for (int j = 0; j < clientsManager->numClients; j++) {
+      if (clientsManager->clients[j].id == clientId) {
+        clientsExists = 1;
+        break;
+      }
+    }
+
     printf("Reservation ID  : %d\n", reservationManager->reservations[i].id);
-    printf("Client ID       : %d\n",
-           reservationManager->reservations[i].clientId);
+    if (!clientsExists) {
+      printf("Client ID        : %d (Invalid - Does not exist)\n", clientId);
+    } else {
+      printf("CLient ID        : %d (Valid)\n", clientId);
+    }
     if (!spaceExists) {
       printf("Space ID        : %d (Invalid - Does not exist)\n", spaceId);
     } else {
@@ -69,6 +83,7 @@ void addNewReservation(ReservationManager *reservationManager,
   ReservationStatus newStatus;
   Reservation *temp = NULL;
   Space *selectedSpace = NULL;
+  Client *selectedClient = NULL;
 
   // If memory is empty, allocate space for the first element
   if (reservationManager->reservations == NULL) {
@@ -115,7 +130,32 @@ void addNewReservation(ReservationManager *reservationManager,
     }
   } while (1); // Repeat until space witch is non-active has been selected
 
-  findClientId = inputID(1, clientManager->numClients, "Enter client ID: ");
+  do {
+    findClientId = inputID(1, INT_MAX, "Enter client ID: ");
+    selectedClient = NULL;
+
+    // Search for the client with the specified ID
+    for (int i = 0; i < clientManager->numClients; i++) {
+      if (clientManager->clients[i].id == findClientId) {
+        selectedClient = &clientManager->clients[i];
+        break;
+      }
+    }
+
+    if (selectedClient == NULL) {
+      printf("Client with ID %d does not exist. Please try again.\n",
+             findClientId);
+      continue;
+    }
+
+    if (selectedClient->status == INACTIVE) {
+      printf("Client ID %d is in-active with another reservation. Please "
+             "select another client.\n",
+             findClientId);
+    } else {
+      break;
+    }
+  } while (1);
 
   puts("Enter reservation date: ");
   inputDate(&newReservationDate);
@@ -146,8 +186,10 @@ void addNewReservation(ReservationManager *reservationManager,
 
   if (newStatus == PENDING || newStatus == CONFIRMED) {
     selectedSpace->status = INACTIVE;
+    selectedClient->status = INACTIVE;
   } else {
     selectedSpace->status = ACTIVE;
+    selectedClient->status = INACTIVE;
   }
 
   // Add to reservationManager's array
@@ -157,6 +199,7 @@ void addNewReservation(ReservationManager *reservationManager,
   reservationManager->unsavedReservations++;
 
   spacesManager->unsavedSpaces++;
+  clientManager->unsavedClients++;
 
   // selectedClient->status = ACTIVE;
   // clientManager->unsavedClients++;
@@ -288,6 +331,9 @@ void editReservation(ReservationManager *reservationManager,
   Space *space =
       &spacesManager->spaces
            [reservationManager->reservations[foundReservationId].spaceId - 1];
+  Client *client =
+      &clientManager->clients
+           [reservationManager->reservations[foundReservationId].clientId - 1];
 
   char dateBuffer[20];
   strftime(
@@ -347,10 +393,15 @@ void editReservation(ReservationManager *reservationManager,
   }
   if (newStatus >= 0) {
     reservationManager->reservations[foundReservationId].status = newStatus;
-    printf("NEw status of the space: %d", newStatus);
+    printf("New status of the space: %d", newStatus);
     space->status =
         (newStatus == CANCELED || newStatus == COMPLETED) ? ACTIVE : INACTIVE;
+
+    client->status =
+        (newStatus == CANCELED || newStatus == COMPLETED) ? ACTIVE : INACTIVE;
+
     spacesManager->unsavedSpaces++;
+    clientManager->unsavedClients++;
   }
   if (newNumParticipants > 0) {
     reservationManager->reservations[foundReservationId].numParticipants =
