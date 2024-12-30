@@ -234,7 +234,7 @@ void deleteReservation(ReservationManager *reservationManager,
        "\n            Delete Reservation             \n"
        "----------------------------------------\n");
 
-  deleteId = getInt(1, reservationManager->numReservations,
+  deleteId = getInt(1, reservationManager->nextId,
                     "Enter the ID of the reservation to delete: ");
 
   // finding the id
@@ -293,13 +293,13 @@ void editReservation(ReservationManager *reservationManager,
                      SpaceManager *spacesManager) {
   int editId;
   int foundReservationId = -1;
-  int findClientId;
-  int findSpaceId;
   int newDate;
   struct tm newReservationDate;
   int newDuration;
   ReservationStatus newStatus;
   int newNumParticipants;
+  Space *spacePtr;
+  Client *clientPtr;
 
   if (!reservationManager->fileLoaded ||
       reservationManager->numReservations == 0 ||
@@ -312,8 +312,21 @@ void editReservation(ReservationManager *reservationManager,
        "\n             Edit Reservation              \n"
        "----------------------------------------\n");
 
-  editId = getInt(1, reservationManager->numReservations,
+  editId = getInt(1, reservationManager->nextId,
                   "Enter the ID of the reservation to edit: ");
+
+  int x = 0;
+  for (int i = 0; i < reservationManager->numReservations; i++) {
+    x = reservationManager->reservations[i].spaceId;
+  }
+
+  int y = 0;
+  for (int i = 0; i < reservationManager->numReservations; i++) {
+    y = reservationManager->reservations[i].clientId;
+  }
+
+  spacePtr = &spacesManager->spaces[x - 1];
+  clientPtr = &clientManager->clients[y - 1];
 
   // Finding the reservation to edit
   for (int i = 0; i < reservationManager->numReservations; i++) {
@@ -327,10 +340,10 @@ void editReservation(ReservationManager *reservationManager,
     puts("Reservation with that ID was not found");
     return;
   }
-
   Space *space =
       &spacesManager->spaces
            [reservationManager->reservations[foundReservationId].spaceId - 1];
+
   Client *client =
       &clientManager->clients
            [reservationManager->reservations[foundReservationId].clientId - 1];
@@ -357,11 +370,7 @@ void editReservation(ReservationManager *reservationManager,
   printf("Participants     : %d\n\n",
          reservationManager->reservations[foundReservationId].numParticipants);
 
-  findClientId = getInt(0, clientManager->numClients,
-                        "Enter new Client ID or 0 to keep current: ");
-  findSpaceId = getInt(0, spacesManager->numSpaces,
-                       "Enter new Space ID or 0 to keep current: ");
-
+  // EDIT DATE
   newDate = getInt(0, 1, "Enter 1 for new date or 0 to keep current: ");
   if (newDate != 0) {
     inputDate(&newReservationDate);
@@ -369,45 +378,59 @@ void editReservation(ReservationManager *reservationManager,
         newReservationDate;
   }
 
+  // EDIT DURATION
   newDuration =
       getInt(0, 12, "Enter new duration (in hours) or 0 to keep current: ");
-  newStatus = (ReservationStatus)getInt(
-      0, 3,
-      "Enter new status (0 = PENDING, 1 = CONFIRMED, 2 = COMPLETED, 3 = "
-      "CANCELED) or -1 to keep current: ");
-  newNumParticipants = getInt(
-      0, 10000, "Enter new number of participants or 0 to keep current: ");
-
-  if (findClientId > 0) {
-    reservationManager->reservations[foundReservationId].clientId =
-        findClientId;
-    spacesManager->unsavedSpaces++;
-  }
-  if (findSpaceId > 0) {
-    reservationManager->reservations[foundReservationId].spaceId = findSpaceId;
-    spacesManager->unsavedSpaces++;
-  }
   if (newDuration > 0) {
     reservationManager->reservations[foundReservationId].duration = newDuration;
     spacesManager->unsavedSpaces++;
   }
+
+  // EDIT STATUS
+  newStatus = (ReservationStatus)getInt(
+      0, 4,
+      "Enter new status (0 = PENDING, 1 = CONFIRMED, "
+      "2 = COMPLETED, 3 = CANCELED) or to keep current enter 4: ");
   if (newStatus >= 0) {
     reservationManager->reservations[foundReservationId].status = newStatus;
-    printf("New status of the space: %d", newStatus);
-    space->status =
-        (newStatus == CANCELED || newStatus == COMPLETED) ? ACTIVE : INACTIVE;
-
-    client->status =
-        (newStatus == CANCELED || newStatus == COMPLETED) ? ACTIVE : INACTIVE;
-
-    spacesManager->unsavedSpaces++;
-    clientManager->unsavedClients++;
-  }
-  if (newNumParticipants > 0) {
-    reservationManager->reservations[foundReservationId].numParticipants =
-        newNumParticipants;
     spacesManager->unsavedSpaces++;
   }
+
+  if (newStatus == PENDING || newStatus == CONFIRMED) {
+    spacePtr->status = INACTIVE;
+    clientPtr->status = INACTIVE;
+  } else {
+    spacePtr->status = ACTIVE;
+    clientPtr->status = INACTIVE;
+  }
+  if (newStatus == CANCELED || newStatus == COMPLETED) {
+    spacePtr->status = ACTIVE;
+    clientPtr->status = ACTIVE;
+  } else {
+    spacePtr->status = INACTIVE;
+    clientPtr->status = INACTIVE;
+  }
+
+  // EDIT NUMBER OF PARTICIPANTS
+  do {
+    newNumParticipants = getInt(
+        0, 10000, "Enter new number of participants or 0 to keep current: ");
+
+    if (newNumParticipants == 0) {
+      break;
+    }
+
+    if (space->capacity < newNumParticipants) {
+      puts("The capacity of the space is lower than the number of "
+           "participants.");
+    } else {
+      reservationManager->reservations[foundReservationId].numParticipants =
+          newNumParticipants;
+      spacesManager->unsavedSpaces++;
+      break;
+    }
+  } while (1);
+
   clearConsole();
   char updatedDateBuffer[20];
   strftime(

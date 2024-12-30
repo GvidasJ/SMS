@@ -72,7 +72,8 @@ void addNewClient(ClientManager *clientsManager) {
   inputPhoneNumber(newPhoneNumber, MAX_PHONE_LENGTH,
                    "Enter Client phone number: ");
   inputEmail(newEmail, MAX_EMAIL_LENGTH, "Enter Client email: ");
-  newNif = inputNif(*clientsManager);
+  newNif = inputNif(*clientsManager,
+                    -1); // Pass -1 to validate uniqueness for all NIFs
 
   // Get current date
   time_t t = time(NULL);
@@ -161,7 +162,8 @@ void editClients(ClientManager *clientsManager) {
   inputPhoneNumber(newPhoneNumber, MAX_PHONE_LENGTH,
                    "Enter new phone number: ");
   inputEmail(newEmail, MAX_EMAIL_LENGTH, "Enter new email: ");
-  newNif = inputNif(*clientsManager);
+  newNif =
+      inputNif(*clientsManager, clientsManager->clients[foundClientId].nif);
 
   strncpy(clientsManager->clients[foundClientId].name, newName,
           MAX_NAME_LENGTH - 1);

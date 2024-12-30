@@ -100,25 +100,28 @@ void inputEmail(char *email, int maxLength, const char *msg) {
   } while (!valid);
 }
 
-int inputNif(ClientManager clientManager) {
+int inputNif(ClientManager clientManager, int excludeNif) {
   int i;
-  int check = 1;
+  int check;
   int nif;
 
   do {
+    check = 1; // Assume valid until proven otherwise
     nif = getInt(100000000, 999999999, "Insert NIF number: ");
+
     for (i = 0; i < clientManager.numClients; i++) {
-      if (nif == clientManager.clients->nif) {
+      // Skip checking against the excluded NIF (e.g., the current client's NIF)
+      if (nif == clientManager.clients[i].nif && nif != excludeNif) {
         check = 0;
         printf("NIF already exists!\n");
         break;
-      } else {
-        check = 1;
       }
     }
   } while (check == 0);
+
   return nif;
 }
+
 int inputID(const int min, int max, char *msg) { return getInt(min, max, msg); }
 
 void inputDate(struct tm *date) {

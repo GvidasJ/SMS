@@ -98,7 +98,7 @@ void inputSpaceType(char *type, int maxLength, const char *msg);
 // Clients
 void inputPhoneNumber(char *phoneNumber, int maxLength, const char *msg);
 void inputEmail(char *email, int maxLength, const char *msg);
-int inputNif(ClientManager clientManager);
+int inputNif(ClientManager clientManager, int excludeNif);
 int inputID(const int min, int max, char *msg);
 
 // Reservation
