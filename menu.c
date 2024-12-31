@@ -313,7 +313,6 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
                     "9. Space Occupancy Rate \n"
                     "10. Most and Least Used Equipment \n"
                     "11. Equipment Usage Rate at Each Event \n"
-                    "12. Resource Management Efficiency \n"
                     "0. Back to Main Menu \n"
                     "----------------------------------------\n"
                     "Please select an option 0-12: \n");
@@ -362,10 +361,6 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
     case 11:
       clearConsole();
       // reportEquipmentUsageRate(equipmentManager);
-      break;
-    case 12:
-      clearConsole();
-      // reportResourceManagementEfficiency(equipmentManager);
       break;
     case 0:
       clearConsole();

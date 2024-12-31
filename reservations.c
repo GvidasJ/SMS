@@ -181,14 +181,7 @@ void addNewReservation(ReservationManager *reservationManager,
              findEquipmentId);
       continue;
     }
-
-    if (selectedEquipment->status == INACTIVE) {
-      printf("Equipment ID %d is in-active with another reservation. Please "
-             "select another client.\n",
-             findEquipmentId);
-    } else {
-      break;
-    }
+    break;
   } while (1);
 
   do {
@@ -273,6 +266,7 @@ void addNewReservation(ReservationManager *reservationManager,
   printf("Reservation ID  : %d\n", newReservation.id);
   printf("Client ID       : %d\n", newReservation.clientId);
   printf("Space ID        : %d\n", newReservation.spaceId);
+  printf("Equipment ID   : %d\n", newReservation.equipmentId);
   printf("Reservation Date: %02d/%02d/%d\n",
          newReservation.reservationDate.tm_mday,
          newReservation.reservationDate.tm_mon + 1,
@@ -280,7 +274,6 @@ void addNewReservation(ReservationManager *reservationManager,
   printf("Duration        : %d hours\n", newReservation.duration);
   printf("Status          : %s\n", statusToString(newReservation.status));
   printf("Participants    : %d\n", newReservation.numParticipants);
-  printf("Equipments    : %d\n", equipmentsManager->numEquipments);
 }
 
 void editReservation(ReservationManager *reservationManager,

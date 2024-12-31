@@ -57,6 +57,8 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager,
     fwrite(&reservationsManager->reservations[i].clientId, sizeof(int), 1,
            file);
     fwrite(&reservationsManager->reservations[i].spaceId, sizeof(int), 1, file);
+    fwrite(&reservationsManager->reservations[i].equipmentId, sizeof(int), 1,
+           file);
     fwrite(&reservationsManager->reservations[i].reservationDate,
            sizeof(struct tm), 1, file);
     fwrite(&reservationsManager->reservations[i].duration, sizeof(int), 1,
@@ -71,12 +73,14 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager,
   fwrite(&equipmentManager->numEquipments, sizeof(int), 1, file);
   for (int i = 0; i < equipmentManager->numEquipments; i++) {
     fwrite(&equipmentManager->equipments[i].id, sizeof(int), 1, file);
-    fwrite(equipmentManager->equipments[i].name, sizeof(char),
+    fwrite(&equipmentManager->equipments[i].name, sizeof(char),
            MAX_EQUIPMENT_NAME, file);
-    fwrite(equipmentManager->equipments[i].type, sizeof(char),
+    fwrite(&equipmentManager->equipments[i].type, sizeof(char),
            MAX_EQUIPMENT_TYPE, file);
-    fwrite(&equipmentManager->equipments[i].status, sizeof(EquipmentStatus), 1,
-           file);
+    fwrite(&equipmentManager->equipments[i].equipmentStatus,
+           sizeof(EquipmentStatus), MAX_EQUIPMENT_TYPE, file);
+    fwrite(&equipmentManager->equipments[i].status, sizeof(EntitiesStatus),
+           MAX_EQUIPMENT_TYPE, file);
   }
 
   fclose(file);
@@ -172,6 +176,8 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
     fread(&reservationsManager->reservations[i].id, sizeof(int), 1, file);
     fread(&reservationsManager->reservations[i].clientId, sizeof(int), 1, file);
     fread(&reservationsManager->reservations[i].spaceId, sizeof(int), 1, file);
+    fread(&reservationsManager->reservations[i].equipmentId, sizeof(int), 1,
+          file);
     fread(&reservationsManager->reservations[i].reservationDate,
           sizeof(struct tm), 1, file);
     fread(&reservationsManager->reservations[i].duration, sizeof(int), 1, file);
@@ -196,7 +202,9 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
           MAX_EQUIPMENT_TYPE, file);
     equipmentManager->equipments[i].type[MAX_EQUIPMENT_TYPE - 1] = '\0';
 
-    fread(&equipmentManager->equipments[i].status, sizeof(EquipmentStatus), 1,
+    fread(&equipmentManager->equipments[i].equipmentStatus,
+          sizeof(EquipmentStatus), 1, file);
+    fread(&equipmentManager->equipments[i].status, sizeof(EntitiesStatus), 1,
           file);
   }
 
