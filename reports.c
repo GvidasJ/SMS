@@ -286,7 +286,6 @@ void reportReservationsByDate(ReservationManager *reservationManager) {
 // FIX THIS LATER
 void reportSpaceOccupancyRate(ReservationManager *reservationManager,
                               SpaceManager *spaceManager) {
-
   if (!reservationManager->fileLoaded || !spaceManager->fileLoaded) {
     puts("\nNo file loaded, please load a file first");
     return;
@@ -296,7 +295,7 @@ void reportSpaceOccupancyRate(ReservationManager *reservationManager,
     return;
   }
 
-  puts("----------------------------------------");
+  puts("\n----------------------------------------");
   puts("           Space Occupancy Rate          ");
   puts("----------------------------------------");
 
@@ -306,26 +305,40 @@ void reportSpaceOccupancyRate(ReservationManager *reservationManager,
     return;
   }
 
-  // For each space, calculate occupancy
-  for (int i = 0; i < spaceManager->numSpaces; i++) {
-    int totalHoursReserved = 0;
-    int totalReservations = 0;
+  // Loop through each reservation
+  for (int i = 0; i < reservationManager->numReservations; i++) {
+    // Skip canceled reservations
+    if (reservationManager->reservations[i].status == CANCELED) {
+      continue;
+    }
 
-    for (int j = 0; j < reservationManager->numReservations; j++) {
-      if (reservationManager->reservations[j].spaceId ==
-              spaceManager->spaces[i].id &&
-          reservationManager->reservations[j].status == CONFIRMED) {
-        totalReservations++;
-        totalHoursReserved += reservationManager->reservations[j].duration;
+    int reservationId = reservationManager->reservations[i].id;
+    int spaceId = reservationManager->reservations[i].spaceId;
+    int participants = reservationManager->reservations[i].numParticipants;
+
+    // Find the corresponding space
+    Space *currentSpace = NULL;
+    for (int j = 0; j < spaceManager->numSpaces; j++) {
+      if (spaceManager->spaces[j].id == spaceId) {
+        currentSpace = &spaceManager->spaces[j];
+        break;
       }
     }
-    double occupancyRate =
-        (double)totalReservations / spaceManager->spaces[i].capacity * 100;
 
-    printf("Space: %s (ID: %d)\n", spaceManager->spaces[i].name,
-           spaceManager->spaces[i].id);
-    printf("Total Reservations: %d\n", totalReservations);
-    printf("Occupancy Rate: %.1lf%%\n", occupancyRate);
+    if (currentSpace == NULL || currentSpace->status == INACTIVE) {
+      continue;
+    }
+
+    // Calculate occupancy rate for this reservation
+    double occupancyRate =
+        ((double)participants / currentSpace->capacity) * 100;
+
+    // Print reservation details
+    printf("\nReservation ID: %d\n", reservationId);
+    printf("Space ID: %d\n", spaceId);
+    printf("Space Capacity: %d people\n", currentSpace->capacity);
+    printf("Number of Participants: %d\n", participants);
+    printf("Occupancy Rate: %.1f%%\n", occupancyRate);
     puts("----------------------------------------");
   }
 }

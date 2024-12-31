@@ -85,63 +85,6 @@ void addNewSpace(SpaceManager *spacesManager) {
   printf("Capacity: %d\n", newSpace.capacity);
 }
 
-void deleteSpace(SpaceManager *spacesManager) {
-  int deleteId;
-  int foundSpaceId = -1;
-
-  if (!spacesManager->fileLoaded || spacesManager->numSpaces == 0 ||
-      spacesManager->spaces == NULL) {
-    puts("No spaces available to delete");
-    return;
-  }
-
-  puts("----------------------------------------"
-       "\n            Delete Space             \n"
-       "----------------------------------------\n");
-
-  deleteId =
-      getInt(1, spacesManager->nextId, "Enter the ID of the space to delete: ");
-
-  // Finding the ID
-  for (int i = 0; i < spacesManager->numSpaces; i++) {
-    if (spacesManager->spaces[i].id == deleteId) {
-      foundSpaceId = i;
-      break;
-    }
-  }
-
-  if (foundSpaceId == -1) {
-    puts("Space with that ID was not found");
-    return;
-  }
-
-  // Check if the space is inactive
-  if (spacesManager->spaces[foundSpaceId].status == INACTIVE) {
-    puts("Cannot delete space because its status is INACTIVE");
-    return;
-  }
-
-  // Shift spaces and change ID numbers to make them in order
-  for (int i = foundSpaceId; i < spacesManager->numSpaces - 1; i++) {
-    spacesManager->spaces[i] = spacesManager->spaces[i + 1];
-  }
-
-  spacesManager->numSpaces--;
-  spacesManager->unsavedSpaces++;
-
-  if (spacesManager->numSpaces == 0) {
-    free(spacesManager->spaces);
-    spacesManager->spaces = NULL;
-  } else {
-    Space *temp = realloc(spacesManager->spaces,
-                          spacesManager->numSpaces * sizeof(Space));
-    spacesManager->spaces = temp;
-  }
-
-  clearConsole();
-  puts("Space deleted successfully");
-}
-
 void editSpace(SpaceManager *spacesManager) {
   int editId;
   int foundSpaceId = -1;
@@ -216,4 +159,61 @@ void editSpace(SpaceManager *spacesManager) {
   printf("Name    : %s\n", spacesManager->spaces[foundSpaceId].name);
   printf("Type    : %s\n", spacesManager->spaces[foundSpaceId].type);
   printf("Capacity: %d\n", spacesManager->spaces[foundSpaceId].capacity);
+}
+
+void deleteSpace(SpaceManager *spacesManager) {
+  int deleteId;
+  int foundSpaceId = -1;
+
+  if (!spacesManager->fileLoaded || spacesManager->numSpaces == 0 ||
+      spacesManager->spaces == NULL) {
+    puts("No spaces available to delete");
+    return;
+  }
+
+  puts("----------------------------------------"
+       "\n            Delete Space             \n"
+       "----------------------------------------\n");
+
+  deleteId =
+      getInt(1, spacesManager->nextId, "Enter the ID of the space to delete: ");
+
+  // Finding the ID
+  for (int i = 0; i < spacesManager->numSpaces; i++) {
+    if (spacesManager->spaces[i].id == deleteId) {
+      foundSpaceId = i;
+      break;
+    }
+  }
+
+  if (foundSpaceId == -1) {
+    puts("Space with that ID was not found");
+    return;
+  }
+
+  // Check if the space is inactive
+  if (spacesManager->spaces[foundSpaceId].status == INACTIVE) {
+    puts("Cannot delete space because its status is INACTIVE");
+    return;
+  }
+
+  // Shift spaces and change ID numbers to make them in order
+  for (int i = foundSpaceId; i < spacesManager->numSpaces - 1; i++) {
+    spacesManager->spaces[i] = spacesManager->spaces[i + 1];
+  }
+
+  spacesManager->numSpaces--;
+  spacesManager->unsavedSpaces++;
+
+  if (spacesManager->numSpaces == 0) {
+    free(spacesManager->spaces);
+    spacesManager->spaces = NULL;
+  } else {
+    Space *temp = realloc(spacesManager->spaces,
+                          spacesManager->numSpaces * sizeof(Space));
+    spacesManager->spaces = temp;
+  }
+
+  clearConsole();
+  puts("Space deleted successfully");
 }

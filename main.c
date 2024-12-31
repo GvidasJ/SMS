@@ -11,7 +11,7 @@ int main() {
   SpaceManager spaceManager = {NULL, 0, 0, 0, 1, 1};
   ClientManager clientManager = {NULL, 0, 0, 0, 1, 1};
   ReservationManager reservationManager = {NULL, 0, 0, 0, 1};
-  EquipmentManager equipmentManager = {NULL, 0, 0, 0};
+  EquipmentManager equipmentManager = {NULL, 0, 0, 0, 1};
   clearConsole();
   mainMenu(&spaceManager, &clientManager, &reservationManager,
            &equipmentManager);

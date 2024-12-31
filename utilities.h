@@ -57,6 +57,7 @@ typedef struct {
   int id;
   int clientId;
   int spaceId;
+  int equipmentId;
   struct tm reservationDate;
   int duration;
   ReservationStatus status;
@@ -81,7 +82,8 @@ typedef struct {
   int id;
   char name[MAX_NAME_LENGTH];
   char type[MAX_TYPE_LENGTH];
-  EquipmentStatus status;
+  EquipmentStatus equipmentStatus;
+  EntitiesStatus status;
 } Equipment;
 
 typedef struct {
@@ -89,6 +91,8 @@ typedef struct {
   int numEquipments;
   int unsavedEquipments;
   int fileLoaded;
+  int nextId;
+  int isActive;
 } EquipmentManager;
 
 // Spaces

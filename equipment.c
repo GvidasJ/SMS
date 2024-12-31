@@ -37,16 +37,17 @@ void addNewEquipment(EquipmentManager *equipmentManager) {
   char newType[MAX_EQUIPMENT_TYPE];
   int newStatus;
   Equipment *temp = NULL;
+  int equipmentUsable;
 
   if (equipmentManager->equipments == NULL) {
     temp = malloc(sizeof(Equipment));
     equipmentManager->equipments = temp;
-    newId = 1;
+    newId = equipmentManager->nextId++;
   } else {
     temp = realloc(equipmentManager->equipments,
-                   (equipmentManager->numEquipments + 1) * sizeof(Equipment));
+                   (equipmentManager->nextId + 1) * sizeof(Equipment));
     equipmentManager->equipments = temp;
-    newId = equipmentManager->numEquipments + 1;
+    newId = equipmentManager->nextId++;
   }
 
   puts("----------------------------------------"
@@ -65,7 +66,8 @@ void addNewEquipment(EquipmentManager *equipmentManager) {
   strncpy(newEquipment.type, newType, MAX_EQUIPMENT_TYPE - 1);
   newEquipment.name[MAX_EQUIPMENT_NAME - 1] = '\0';
   newEquipment.type[MAX_EQUIPMENT_TYPE - 1] = '\0';
-  newEquipment.status = newStatus;
+  newEquipment.equipmentStatus = newStatus;
+  newEquipment.status = ACTIVE;
 
   // Add to manager's array
   equipmentManager->equipments[equipmentManager->numEquipments] = newEquipment;
@@ -77,27 +79,29 @@ void addNewEquipment(EquipmentManager *equipmentManager) {
   printf("ID     : %d\n", newEquipment.id);
   printf("Name   : %s\n", newEquipment.name);
   printf("Type   : %s\n", newEquipment.type);
-  printf("Status : %s\n", equipmentStatusToString(newEquipment.status));
+  printf("Status : %s\n",
+         equipmentStatusToString(newEquipment.equipmentStatus));
 }
 
 void editEquipment(EquipmentManager *equipmentManager) {
+
+  int editId;
+  int foundEquipmentId = -1;
+  char newName[MAX_EQUIPMENT_NAME];
+  char newType[MAX_EQUIPMENT_TYPE];
+  int newEquipmentStatus;
+
   if (!equipmentManager->fileLoaded || equipmentManager->numEquipments == 0 ||
       equipmentManager->equipments == NULL) {
     puts("No equipment available to edit");
     return;
   }
 
-  int editId;
-  int foundEquipmentId = -1;
-  char newName[MAX_EQUIPMENT_NAME];
-  char newType[MAX_EQUIPMENT_TYPE];
-  int newStatus;
-
   puts("----------------------------------------"
        "\n          Edit Equipment              \n"
        "----------------------------------------\n");
 
-  editId = getInt(1, equipmentManager->numEquipments,
+  editId = getInt(1, equipmentManager->nextId,
                   "Enter the ID of the equipment to edit: ");
 
   for (int i = 0; i < equipmentManager->numEquipments; i++) {
@@ -111,6 +115,12 @@ void editEquipment(EquipmentManager *equipmentManager) {
     puts("Equipment with that ID was not found");
     return;
   }
+
+  if (equipmentManager->equipments[foundEquipmentId].status == INACTIVE) {
+    puts("Cannot edit an inactive space.");
+    return;
+  }
+
   // Display current equipment details
   puts("\nCurrent equipment details:");
   printf("ID               : %d\n",
@@ -119,17 +129,22 @@ void editEquipment(EquipmentManager *equipmentManager) {
          equipmentManager->equipments[foundEquipmentId].name);
   printf("Type             : %s\n",
          equipmentManager->equipments[foundEquipmentId].type);
-  printf("Status           : %s\n",
+  printf("Equipment Status: %s\n",
+         equipmentStatusToString(
+             equipmentManager->equipments[foundEquipmentId].equipmentStatus));
+  printf("Status: %s\n",
          equipmentStatusToString(
              equipmentManager->equipments[foundEquipmentId].status));
 
+  // Ask for new inputs
   inputName(newName, MAX_EQUIPMENT_NAME,
             "Enter new equipment name or 0 to keep current: ");
   inputSpaceType(newType, MAX_EQUIPMENT_TYPE,
                  "Enter new equipment type or 0 to keep current: ");
-  newStatus = getInt(0, 3,
-                     "Enter new status (0 to keep current, 1-Available, "
-                     "2-Reserved, 3-Under Maintenance): ");
+  newEquipmentStatus =
+      getInt(0, 3,
+             "Enter new status (0 to keep current, 1-Available, "
+             "2-Reserved, 3-Under Maintenance): ");
 
   if (strcmp(newName, "0") != 0) {
     strncpy(equipmentManager->equipments[foundEquipmentId].name, newName,
@@ -143,15 +158,21 @@ void editEquipment(EquipmentManager *equipmentManager) {
     equipmentManager->equipments[foundEquipmentId]
         .type[MAX_EQUIPMENT_TYPE - 1] = '\0';
   }
-  if (newStatus > 0) {
-    equipmentManager->equipments[foundEquipmentId].status = newStatus - 1;
+  if (newEquipmentStatus > 0) {
+    equipmentManager->equipments[foundEquipmentId].status =
+        newEquipmentStatus - 1;
   }
 
   equipmentManager->unsavedEquipments++;
 
   clearConsole();
   puts("\nEquipment updated successfully!");
-  viewAllEquipments(equipmentManager);
+  printf("ID      : %d\n", equipmentManager->equipments[foundEquipmentId].id);
+  printf("Name    : %s\n", equipmentManager->equipments[foundEquipmentId].name);
+  printf("Type    : %s\n", equipmentManager->equipments[foundEquipmentId].type);
+  printf("Status:%s\n",
+         equipmentStatusToString(
+             equipmentManager->equipments[foundEquipmentId].status));
 }
 
 void deleteEquipment(EquipmentManager *equipmentManager) {
@@ -168,8 +189,9 @@ void deleteEquipment(EquipmentManager *equipmentManager) {
        "\n            Delete Equipment             \n"
        "----------------------------------------\n");
 
-  deleteId = getInt(1, equipmentManager->numEquipments,
-                    "Enter equipment ID to delete: ");
+  deleteId =
+      getInt(1, equipmentManager->nextId, "Enter equipment ID to delete: ");
+
   // finding the id of equipment
   for (int i = 0; i < equipmentManager->numEquipments; i++) {
     if (equipmentManager->equipments[i].id == deleteId) {
@@ -183,10 +205,11 @@ void deleteEquipment(EquipmentManager *equipmentManager) {
     return;
   }
   // Shift equipments and change ID numbers to make them in order
-  for (int i = foundEquipmentId; i < equipmentManager->numEquipments - 1; i++) {
-    equipmentManager->equipments[i] = equipmentManager->equipments[i + 1];
-    equipmentManager->equipments[i].id = i + 1;
-  }
+  // for (int i = foundEquipmentId; i < equipmentManager->numEquipments - 1;
+  // i++) {
+  //   equipmentManager->equipments[i] = equipmentManager->equipments[i + 1];
+  //   equipmentManager->equipments[i].id = i + 1;
+  // }
 
   equipmentManager->numEquipments--;
   equipmentManager->unsavedEquipments++;

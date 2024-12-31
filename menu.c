@@ -44,6 +44,8 @@ void mainMenu(SpaceManager *spaceManager, ClientManager *clientManager,
                equipmentManager);
       break;
     case 4:
+      saveFile(spaceManager, clientManager, reservationsManager,
+               equipmentManager);
       clearConsole();
       puts("Exiting....");
       free(spaceManager->spaces);
@@ -87,7 +89,8 @@ void smsMenu(SpaceManager *spaceManager, ClientManager *clientManager,
       break;
     case 3:
       clearConsole();
-      reservationsMenu(reservationsManager, clientManager, spaceManager);
+      reservationsMenu(reservationsManager, clientManager, spaceManager,
+                       equipmentManager);
       break;
     case 4:
       clearConsole();
@@ -199,8 +202,8 @@ void clientsMenu(ClientManager *clientManager) {
 }
 
 void reservationsMenu(ReservationManager *reservationManager,
-                      ClientManager *clientManager,
-                      SpaceManager *spacesManager) {
+                      ClientManager *clientManager, SpaceManager *spacesManager,
+                      EquipmentManager *equipmentManager) {
   int choice;
 
   do {
@@ -218,19 +221,22 @@ void reservationsMenu(ReservationManager *reservationManager,
     switch (choice) {
     case 1:
       clearConsole();
-      viewAllReservations(reservationManager, spacesManager, clientManager);
+      viewAllReservations(reservationManager, spacesManager, clientManager,
+                          equipmentManager);
       break;
     case 2:
       clearConsole();
-      addNewReservation(reservationManager, clientManager, spacesManager);
+      addNewReservation(reservationManager, clientManager, spacesManager,
+                        equipmentManager);
       break;
     case 3:
       clearConsole();
-      editReservation(reservationManager, clientManager, spacesManager);
+      editReservation(reservationManager, clientManager, spacesManager,
+                      equipmentManager);
       break;
     case 4:
       clearConsole();
-      deleteReservation(reservationManager, spacesManager);
+      deleteReservation(reservationManager);
       break;
     case 5:
       clearConsole();
