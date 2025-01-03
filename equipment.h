@@ -6,9 +6,11 @@
 
 #include "utilities.h"
 
-void viewAllEquipments(EquipmentManager* equipmentManager);
-void addNewEquipment(EquipmentManager* equipmentManager);
-void editEquipment(EquipmentManager* equipmentManager);
-void deleteEquipment(EquipmentManager* equipmentManager);
+void viewAllEquipments(EquipmentManager *equipmentManager,
+                       ReservationManager *reservationManager);
+void addNewEquipment(EquipmentManager *equipmentManager);
+void editEquipment(EquipmentManager *equipmentManager);
+void deleteEquipment(EquipmentManager *equipmentManager,
+                     ReservationManager *reservationManager);
 
 #endif

@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-void viewAllEquipments(EquipmentManager *equipmentManager) {
+void viewAllEquipments(EquipmentManager *equipmentManager,
+                       ReservationManager *reservationManager) {
   if (!equipmentManager->fileLoaded) {
     puts("No equipment loaded, please load file first.");
     return;
@@ -15,6 +16,22 @@ void viewAllEquipments(EquipmentManager *equipmentManager) {
        "\n          Available Equipment          \n"
        "----------------------------------------\n");
 
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    // Determine the status based on reservations
+    Equipment *equipment = &equipmentManager->equipments[i];
+    equipment->status = AVAILABLE; // Default to AVAILABLE
+
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      Reservation *reservation = &reservationManager->reservations[j];
+
+      if (reservation->equipmentId == equipment->id &&
+          (reservation->status == PENDING ||
+           reservation->status == CONFIRMED)) {
+        equipment->status = RESERVED;
+        break; // No need to check further; the equipment is RESERVED
+      }
+    }
+  }
   for (int i = 0; i < equipmentManager->numEquipments; i++) {
     printf("ID      : %d\n", equipmentManager->equipments[i].id);
     printf("Name    : %s\n", equipmentManager->equipments[i].name);
@@ -87,8 +104,8 @@ void editEquipment(EquipmentManager *equipmentManager) {
 
   int editId;
   int foundEquipmentId = -1;
-  char newName[MAX_EQUIPMENT_NAME];
-  char newType[MAX_EQUIPMENT_TYPE];
+  char newName[MAX_NAME_LENGTH];
+  char newType[MAX_TYPE_LENGTH];
   int newEquipmentStatus;
 
   if (!equipmentManager->fileLoaded || equipmentManager->numEquipments == 0 ||
@@ -129,17 +146,16 @@ void editEquipment(EquipmentManager *equipmentManager) {
          equipmentManager->equipments[foundEquipmentId].name);
   printf("Type             : %s\n",
          equipmentManager->equipments[foundEquipmentId].type);
-  printf("Equipment Status: %s\n",
+  printf("Equipment Status : %s\n",
          equipmentStatusToString(
              equipmentManager->equipments[foundEquipmentId].equipmentStatus));
-  printf("Status: %s\n",
-         equipmentStatusToString(
-             equipmentManager->equipments[foundEquipmentId].status));
+  printf("Status           : %s\n",
+         statusToString(equipmentManager->equipments[foundEquipmentId].status));
 
   // Ask for new inputs
-  inputName(newName, MAX_EQUIPMENT_NAME,
+  inputName(newName, MAX_NAME_LENGTH,
             "Enter new equipment name or 0 to keep current: ");
-  inputSpaceType(newType, MAX_EQUIPMENT_TYPE,
+  inputSpaceType(newType, MAX_TYPE_LENGTH,
                  "Enter new equipment type or 0 to keep current: ");
   newEquipmentStatus =
       getInt(0, 3,
@@ -148,18 +164,18 @@ void editEquipment(EquipmentManager *equipmentManager) {
 
   if (strcmp(newName, "0") != 0) {
     strncpy(equipmentManager->equipments[foundEquipmentId].name, newName,
-            MAX_EQUIPMENT_NAME - 1);
-    equipmentManager->equipments[foundEquipmentId]
-        .name[MAX_EQUIPMENT_NAME - 1] = '\0';
+            MAX_NAME_LENGTH - 1);
+    equipmentManager->equipments[foundEquipmentId].name[MAX_NAME_LENGTH - 1] =
+        '\0';
   }
   if (strcmp(newType, "0") != 0) {
     strncpy(equipmentManager->equipments[foundEquipmentId].type, newType,
-            MAX_EQUIPMENT_TYPE - 1);
-    equipmentManager->equipments[foundEquipmentId]
-        .type[MAX_EQUIPMENT_TYPE - 1] = '\0';
+            MAX_TYPE_LENGTH - 1);
+    equipmentManager->equipments[foundEquipmentId].type[MAX_TYPE_LENGTH - 1] =
+        '\0';
   }
   if (newEquipmentStatus > 0) {
-    equipmentManager->equipments[foundEquipmentId].status =
+    equipmentManager->equipments[foundEquipmentId].equipmentStatus =
         newEquipmentStatus - 1;
   }
 
@@ -167,15 +183,19 @@ void editEquipment(EquipmentManager *equipmentManager) {
 
   clearConsole();
   puts("\nEquipment updated successfully!");
-  printf("ID      : %d\n", equipmentManager->equipments[foundEquipmentId].id);
-  printf("Name    : %s\n", equipmentManager->equipments[foundEquipmentId].name);
-  printf("Type    : %s\n", equipmentManager->equipments[foundEquipmentId].type);
-  printf("Status:%s\n",
+  printf("ID               : %d\n",
+         equipmentManager->equipments[foundEquipmentId].id);
+  printf("Name             : %s\n",
+         equipmentManager->equipments[foundEquipmentId].name);
+  printf("Type             : %s\n",
+         equipmentManager->equipments[foundEquipmentId].type);
+  printf("Equipment Status : %s\n",
          equipmentStatusToString(
-             equipmentManager->equipments[foundEquipmentId].status));
+             equipmentManager->equipments[foundEquipmentId].equipmentStatus));
 }
 
-void deleteEquipment(EquipmentManager *equipmentManager) {
+void deleteEquipment(EquipmentManager *equipmentManager,
+                     ReservationManager *reservationManager) {
   int deleteId;
   int foundEquipmentId = -1;
 
@@ -204,13 +224,18 @@ void deleteEquipment(EquipmentManager *equipmentManager) {
     puts("Equipment with that ID was not found");
     return;
   }
-  // Shift equipments and change ID numbers to make them in order
-  // for (int i = foundEquipmentId; i < equipmentManager->numEquipments - 1;
-  // i++) {
-  //   equipmentManager->equipments[i] = equipmentManager->equipments[i + 1];
-  //   equipmentManager->equipments[i].id = i + 1;
-  // }
 
+  for (int i = 0; i < reservationManager->numReservations; i++) {
+    if (reservationManager->reservations[i].equipmentId == deleteId) {
+      ReservationStatus status = reservationManager->reservations[i].status;
+
+      if (status == PENDING || status == CONFIRMED) {
+        puts("Cannot delete equipment with active or pending reservations. "
+             "Please cancel or complete the reservations first.");
+        return;
+      }
+    }
+  }
   equipmentManager->numEquipments--;
   equipmentManager->unsavedEquipments++;
 

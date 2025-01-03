@@ -181,6 +181,7 @@ void addNewReservation(ReservationManager *reservationManager,
              findEquipmentId);
       continue;
     }
+
     break;
   } while (1);
 
@@ -242,6 +243,8 @@ void addNewReservation(ReservationManager *reservationManager,
   printf("ReservationStatus %d", newReservation.status);
 
   if (newStatus == PENDING || newStatus == CONFIRMED) {
+    selectedEquipment->equipmentStatus = RESERVED;
+
     selectedSpace->status = INACTIVE;
     selectedClient->status = INACTIVE;
     selectedEquipment->status = INACTIVE;
@@ -393,24 +396,24 @@ void editReservation(ReservationManager *reservationManager,
       0, 4,
       "Enter new status (0 = PENDING, 1 = CONFIRMED, "
       "2 = COMPLETED, 3 = CANCELED) or to keep current enter 4: ");
-  if (newStatus >= 0) {
+  if (newStatus == 4) {
+    newStatus = reservationManager->reservations[foundReservationId].status;
+  } else if (newStatus !=
+             reservationManager->reservations[foundReservationId].status) {
     reservationManager->reservations[foundReservationId].status = newStatus;
     spacesManager->unsavedSpaces++;
-  }
 
-  if (newStatus == PENDING || newStatus == CONFIRMED) {
-    spacePtr->status = INACTIVE;
-    clientPtr->status = INACTIVE;
-  } else {
-    spacePtr->status = ACTIVE;
-    clientPtr->status = INACTIVE;
-  }
-  if (newStatus == CANCELED || newStatus == COMPLETED) {
-    spacePtr->status = ACTIVE;
-    clientPtr->status = ACTIVE;
-  } else {
-    spacePtr->status = INACTIVE;
-    clientPtr->status = INACTIVE;
+    if (newStatus == PENDING || newStatus == CONFIRMED) {
+      spacePtr->status = INACTIVE;
+      clientPtr->status = INACTIVE;
+      equipmentPtr->status = INACTIVE;
+      equipmentPtr->equipmentStatus = RESERVED;
+    } else if (newStatus == COMPLETED || newStatus == CANCELED) {
+      spacePtr->status = ACTIVE;
+      clientPtr->status = ACTIVE;
+      equipmentPtr->status = ACTIVE;
+      equipmentPtr->equipmentStatus = AVAILABLE;
+    }
   }
 
   // EDIT NUMBER OF PARTICIPANTS
@@ -446,7 +449,7 @@ void editReservation(ReservationManager *reservationManager,
          reservationManager->reservations[foundReservationId].clientId);
   printf("Space ID    : %d\n",
          reservationManager->reservations[foundReservationId].spaceId);
-  printf("Equipment ID         : %d\n",
+  printf("Equipment ID: %d\n",
          reservationManager->reservations[foundReservationId].equipmentId);
   printf("Date        : %s\n", updatedDateBuffer);
   printf("Duration    : %d\n",

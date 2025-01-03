@@ -283,7 +283,6 @@ void reportReservationsByDate(ReservationManager *reservationManager) {
   }
 }
 
-// FIX THIS LATER
 void reportSpaceOccupancyRate(ReservationManager *reservationManager,
                               SpaceManager *spaceManager) {
   if (!reservationManager->fileLoaded || !spaceManager->fileLoaded) {
@@ -351,37 +350,104 @@ void reportMostLeastUsedEquipment(EquipmentManager *equipmentManager) {
   }
 
   if (equipmentManager->unsavedEquipments) {
-    puts("\nNo equipment available.");
+    puts("\nPlease save file first");
     return;
   }
-  int maxUsage = -1, minUsage = INT_MAX;
-  int mostUsedIdx = 0, leastUsedIdx = 0;
+
   puts("----------------------------------------");
-  puts("          Most and Least Used Equipment                 ");
+  puts("          Most and Least Used Equipment  ");
   puts("----------------------------------------");
 
   if (equipmentManager->numEquipments == 0) {
     puts("\nNo equipment available.");
     return;
   }
-  for (int i = 0; i < equipmentManager->numEquipments; i++) {
-    int currentUsage = 0;
-    if (equipmentManager->equipments[i].status == RESERVED) {
-      currentUsage = 1;
-    }
 
-    if (currentUsage > maxUsage) {
-      maxUsage = currentUsage;
-      mostUsedIdx = i;
-    }
-    if (currentUsage < minUsage) {
-      minUsage = currentUsage;
-      leastUsedIdx = i;
+  // Initialize usage counts array
+  int usageCounts[equipmentManager->numEquipments];
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    usageCounts[i] = 0;
+    if (equipmentManager->equipments[i].equipmentStatus == RESERVED) {
+      usageCounts[i] = 1; // Count current RESERVED status
     }
   }
 
-  printf("\nMost Used Equipment: %s (Used %d times)\n",
-         equipmentManager->equipments[mostUsedIdx].name, maxUsage);
-  printf("Least Used Equipment: %s (Used %d times)\n",
-         equipmentManager->equipments[leastUsedIdx].name, minUsage);
+  int maxUsage = -1;
+  int minUsage = INT_MAX;
+  int mostUsedIdx = -1;
+  int leastUsedIdx = -1;
+  int hasReserved = 0;
+
+  // Find most and least used equipment
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    if (equipmentManager->equipments[i].equipmentStatus == RESERVED) {
+      hasReserved = 1;
+      if (usageCounts[i] > maxUsage) {
+        maxUsage = usageCounts[i];
+        mostUsedIdx = i;
+      }
+      if (usageCounts[i] < minUsage) {
+        minUsage = usageCounts[i];
+        leastUsedIdx = i;
+      }
+    }
+  }
+
+  if (!hasReserved) {
+    puts("\nNo equipment is currently in use (RESERVED).");
+    return;
+  }
+
+  // Print results
+  printf("\nMost Used Equipment: %s (Currently RESERVED)\n",
+         equipmentManager->equipments[mostUsedIdx].name);
+  printf("Least Used Equipment: %s (Currently RESERVED)\n",
+         equipmentManager->equipments[leastUsedIdx].name);
+
+  puts("----------------------------------------");
+}
+void reportEquipmentUsageRate(ReservationManager *reservationManager,
+                              EquipmentManager *equipmentManager) {
+  if (!equipmentManager->fileLoaded) {
+    puts("\nNo file loaded, please load a file first.");
+    return;
+  }
+
+  if (equipmentManager->numEquipments == 0) {
+    puts("\nNo equipment available.");
+    return;
+  }
+
+  if (equipmentManager->unsavedEquipments) {
+    puts("\nPlease save first.");
+    return;
+  }
+  if (reservationManager->numReservations == 0) {
+    printf("No reservations available to calculate usage rate.\n");
+    return;
+  }
+  puts("----------------------------------------");
+  puts("          Equipment Usage Rate                ");
+  puts("----------------------------------------");
+
+  // Loop through all equipment
+  for (int i = 0; i < equipmentManager->numEquipments; i++) {
+    int equipmentId = equipmentManager->equipments[i].id;
+    int usageCount = 0;
+
+    // Count how many reservations use this equipment
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      if (reservationManager->reservations[j].equipmentId == equipmentId) {
+        usageCount++;
+      }
+    }
+
+    // Calculate usage rate
+    double usageRate =
+        ((double)usageCount / reservationManager->numReservations) * 100;
+
+    // Print the result
+    printf("Equipment '%s' (ID: %d) usage rate: %.2f%%\n",
+           equipmentManager->equipments[i].name, equipmentId, usageRate);
+  }
 }

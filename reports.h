@@ -3,23 +3,27 @@
 
 #include "utilities.h"
 
-//Spaces
+// Spaces
 void reportSpacesByType(SpaceManager *spaceManager);
 void reportTotalSpaces(SpaceManager *spaceManager);
 
-//Clients
+// Clients
 void reportTotalClients(ClientManager *clientManager);
 void reportClientReservations(ClientManager *clientManager,
                               ReservationManager *reservationManager,
                               SpaceManager *spaceManager);
 
-//Reservation
+// Reservation
 void reportReservationsByStatus(ReservationManager *reservationManager);
 void reportReservationsByDate(ReservationManager *reservationManager);
-void reportSpaceOccupancyRate(ReservationManager *reservationManager, SpaceManager *spaceManager);
-void reportMostLeastReservedSpaces(ReservationManager *reservationManager, SpaceManager *spacesManager);
+void reportSpaceOccupancyRate(ReservationManager *reservationManager,
+                              SpaceManager *spaceManager);
+void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
+                                   SpaceManager *spacesManager);
 
-//Equipment
+// Equipment
 void reportMostLeastUsedEquipment(EquipmentManager *equipmentManager);
+void reportEquipmentUsageRate(ReservationManager *reservationManager,
+                              EquipmentManager *equipmentManager);
 
 #endif

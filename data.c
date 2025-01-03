@@ -28,12 +28,14 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager,
   }
 
   // Spaces
+  // Spaces
   fwrite(&spacesManager->numSpaces, sizeof(int), 1, file);
   for (int i = 0; i < spacesManager->numSpaces; i++) {
     fwrite(&spacesManager->spaces[i].id, sizeof(int), 1, file);
     fwrite(spacesManager->spaces[i].name, sizeof(char), MAX_NAME_LENGTH, file);
     fwrite(spacesManager->spaces[i].type, sizeof(char), MAX_TYPE_LENGTH, file);
     fwrite(&spacesManager->spaces[i].capacity, sizeof(int), 1, file);
+    fwrite(&spacesManager->spaces[i].status, sizeof(int), 1, file);
   }
 
   // Clients
@@ -48,6 +50,7 @@ int saveFile(SpaceManager *spacesManager, ClientManager *clientManager,
     fwrite(&clientManager->clients[i].nif, sizeof(int), 1, file);
     fwrite(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1,
            file);
+    fwrite(&clientManager->clients[i].status, sizeof(int), 1, file);
   }
 
   // Reservations
@@ -121,7 +124,7 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
     return -1;
   }
 
-  // Read the number of spaces
+  /// Read the number of spaces
   fread(&spacesManager->numSpaces, sizeof(int), 1, file);
   spacesManager->spaces = malloc(spacesManager->numSpaces * sizeof(Space));
 
@@ -139,6 +142,7 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
 
     fread(&spacesManager->spaces[index].capacity, sizeof(int), 1, file);
     spacesManager->nextId++;
+    fread(&spacesManager->spaces[index].status, sizeof(int), 1, file);
   }
 
   // Read clients data
@@ -164,9 +168,9 @@ int loadFile(SpaceManager *spacesManager, ClientManager *clientManager,
     fread(&clientManager->clients[i].nif, sizeof(int), 1, file);
     fread(&clientManager->clients[i].registrationDate, sizeof(struct tm), 1,
           file); // Load registration date
+    fread(&clientManager->clients[i].status, sizeof(int), 1, file);
     clientManager->nextId++;
   }
-
   // Read reservations data
   fread(&reservationsManager->numReservations, sizeof(int), 1, file);
   reservationsManager->reservations =
