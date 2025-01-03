@@ -341,7 +341,7 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
       break;
     case 6:
       clearConsole();
-      // reportActiveClients(clientManager);
+      reportActiveClients(reservationManager, clientManager);
       break;
     case 7:
       clearConsole();

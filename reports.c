@@ -16,6 +16,11 @@ void reportTotalSpaces(SpaceManager *spaceManager) {
     return;
   }
 
+  if (spaceManager->numSpaces == 0) {
+    puts("\nNo spaces or reservations available");
+    return;
+  }
+
   puts("----------------------------------------");
   puts("          Total Number of Spaces         ");
   puts("----------------------------------------");
@@ -31,6 +36,11 @@ void reportSpacesByType(SpaceManager *spaceManager) {
   }
   if (spaceManager->unsavedSpaces) {
     puts("\nPlease save file first, before getting all the reports");
+    return;
+  }
+
+  if (spaceManager->numSpaces == 0) {
+    puts("\nNo spaces or reservations available");
     return;
   }
 
@@ -66,18 +76,18 @@ void reportSpacesByType(SpaceManager *spaceManager) {
 void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
                                    SpaceManager *spacesManager) {
   if (!reservationManager->fileLoaded || !spacesManager->fileLoaded) {
-    puts("\nNo file loaded, please load a file first.");
+    puts("\nNo file loaded, please load a file first");
     return;
   }
 
   if (spacesManager->unsavedSpaces || reservationManager->unsavedReservations) {
-    puts("\nNo spaces or reservations available.");
+    puts("\nNo spaces or reservations available");
     return;
   }
 
   int maxReservations = -1, minReservations = INT_MAX;
   puts("----------------------------------------");
-  puts("          Most and Least Reserved Spaces                 ");
+  puts("     Most and Least Reserved Spaces                 ");
   puts("----------------------------------------");
   // First pass: find max and min counts
   for (int i = 0; i < spacesManager->numSpaces; i++) {
@@ -99,7 +109,7 @@ void reportMostLeastReservedSpaces(ReservationManager *reservationManager,
 
   if (spacesManager->numSpaces == 0 ||
       reservationManager->numReservations == 0) {
-    puts("\nNo spaces or reservations available.");
+    puts("No spaces or reservations available");
     return;
   }
 
@@ -150,10 +160,14 @@ void reportTotalClients(ClientManager *clientManager) {
     puts("\nPlease save file first, before getting all the reports");
     return;
   }
-
   puts("----------------------------------------");
   puts("          Total Number of Clients        ");
   puts("----------------------------------------");
+
+  if (clientManager->numClients == 0) {
+    puts("No clients available");
+    return;
+  }
   printf("Registered clients: %d\n", clientManager->numClients);
 }
 
@@ -171,10 +185,14 @@ void reportClientReservations(ClientManager *clientManager,
     puts("\nPlease save file first, before getting all the reports");
     return;
   }
-
   puts("----------------------------------------");
   puts("          Clients Reservation Report          ");
   puts("----------------------------------------");
+
+  if (clientManager->numClients == 0) {
+    puts("No clients available.");
+    return;
+  }
 
   for (int i = 0; i < clientManager->numClients; i++) {
     int totalReservations = 0;
@@ -208,6 +226,62 @@ void reportClientReservations(ClientManager *clientManager,
     }
   }
 }
+
+void reportActiveClients(ReservationManager *reservationManager,
+                         ClientManager *clientManager) {
+  if (!reservationManager->fileLoaded || !clientManager->fileLoaded) {
+    puts("\nNo file loaded, please load a file first");
+    return;
+  }
+
+  puts("----------------------------------------");
+  puts("          Most Active Clients           ");
+  puts("----------------------------------------");
+
+  if (clientManager->numClients == 0 ||
+      reservationManager->numReservations == 0) {
+    puts("No clients or reservations available");
+    return;
+  }
+
+  int maxReservations = -1;
+
+  for (int i = 0; i < clientManager->numClients; i++) {
+    int currentClientReservations = 0;
+    for (int j = 0; j < reservationManager->numReservations; j++) {
+      if (reservationManager->reservations[j].status != CANCELED &&
+          reservationManager->reservations[j].clientId ==
+              clientManager->clients[i].id) {
+        currentClientReservations++;
+      }
+    }
+
+    if (currentClientReservations > maxReservations) {
+      maxReservations = currentClientReservations;
+    }
+  }
+
+  if (maxReservations > 0) {
+    puts("Most active clients:\n");
+    for (int i = 0; i < clientManager->numClients; i++) {
+      int currentClientReservations = 0;
+      for (int j = 0; j < reservationManager->numReservations; j++) {
+        if (reservationManager->reservations[j].status != CANCELED &&
+            reservationManager->reservations[j].clientId ==
+                clientManager->clients[i].id) {
+          currentClientReservations++;
+        }
+      }
+      if (currentClientReservations == maxReservations) {
+        printf("\nID          : %d\n", clientManager->clients[i].id);
+        printf("Name        : %s\n", clientManager->clients[i].name);
+        printf("Reservations: %d\n", maxReservations);
+      }
+    }
+  } else {
+    puts("\nNo active clients found.");
+  }
+}
 // Reservations
 void reportReservationsByStatus(ReservationManager *reservationManager) {
   if (!reservationManager->fileLoaded) {
@@ -219,11 +293,16 @@ void reportReservationsByStatus(ReservationManager *reservationManager) {
     return;
   }
 
-  int pending = 0, confirmed = 0, completed = 0, canceled = 0;
-
   puts("----------------------------------------");
   puts("        Reservations by Status          ");
   puts("----------------------------------------");
+
+  if (reservationManager->numReservations == 0) {
+    puts("No reservation available");
+    return;
+  }
+
+  int pending = 0, confirmed = 0, completed = 0, canceled = 0;
 
   // Count reservations by status
   for (int i = 0; i < reservationManager->numReservations; i++) {
@@ -301,7 +380,7 @@ void reportSpaceOccupancyRate(ReservationManager *reservationManager,
 
   if (spaceManager->numSpaces == 0 ||
       reservationManager->numReservations == 0) {
-    puts("No data available for occupancy calculation.");
+    puts("No data available for occupancy calculation");
     return;
   }
 
@@ -346,7 +425,7 @@ void reportSpaceOccupancyRate(ReservationManager *reservationManager,
 // Equipment
 void reportMostLeastUsedEquipment(EquipmentManager *equipmentManager) {
   if (!equipmentManager->fileLoaded) {
-    puts("\nNo file loaded, please load a file first.");
+    puts("\nNo file loaded, please load a file first");
     return;
   }
 
@@ -360,7 +439,7 @@ void reportMostLeastUsedEquipment(EquipmentManager *equipmentManager) {
   puts("----------------------------------------");
 
   if (equipmentManager->numEquipments == 0) {
-    puts("\nNo equipment available.");
+    puts("No equipment available");
     return;
   }
 
@@ -414,22 +493,23 @@ void reportEquipmentUsageRate(ReservationManager *reservationManager,
     return;
   }
 
-  if (equipmentManager->numEquipments == 0) {
-    puts("\nNo equipment available.");
-    return;
-  }
-
   if (equipmentManager->unsavedEquipments) {
     puts("\nPlease save first.");
-    return;
-  }
-  if (reservationManager->numReservations == 0) {
-    printf("No reservations available to calculate usage rate.\n");
     return;
   }
   puts("----------------------------------------");
   puts("          Equipment Usage Rate                ");
   puts("----------------------------------------");
+
+  if (equipmentManager->numEquipments == 0) {
+    puts("No equipment available");
+    return;
+  }
+
+  if (reservationManager->numReservations == 0) {
+    printf("No reservations available to calculate usage rate\n");
+    return;
+  }
 
   // Loop through all equipment
   for (int i = 0; i < equipmentManager->numEquipments; i++) {

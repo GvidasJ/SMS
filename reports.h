@@ -12,6 +12,8 @@ void reportTotalClients(ClientManager *clientManager);
 void reportClientReservations(ClientManager *clientManager,
                               ReservationManager *reservationManager,
                               SpaceManager *spaceManager);
+void reportActiveClients(ReservationManager *reservationManager,
+                         ClientManager *clientManager);
 
 // Reservation
 void reportReservationsByStatus(ReservationManager *reservationManager);
