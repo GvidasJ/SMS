@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
+
 // Spaces
 void reportTotalSpaces(SpaceManager *spaceManager) {
   if (!spaceManager->fileLoaded) {

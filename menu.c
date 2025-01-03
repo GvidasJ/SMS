@@ -299,7 +299,7 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
   int choice;
 
   do {
-    choice = getInt(0, 10,
+    choice = getInt(0, 11,
                     "----------------------------------------"
                     "\n            Generate Reports           \n"
                     "----------------------------------------\n"
@@ -316,7 +316,7 @@ void generateReports(SpaceManager *spaceManager, ClientManager *clientManager,
                     "11. Equipment Usage Rate at Each Event \n"
                     "0. Back to Main Menu \n"
                     "----------------------------------------\n"
-                    "Please select an option 0-12: \n");
+                    "Please select an option 0-11: \n");
 
     switch (choice) {
     case 1:

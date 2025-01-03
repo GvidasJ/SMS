@@ -17,9 +17,9 @@ void viewAllEquipments(EquipmentManager *equipmentManager,
        "----------------------------------------\n");
 
   for (int i = 0; i < equipmentManager->numEquipments; i++) {
-    // Determine the status based on reservations
     Equipment *equipment = &equipmentManager->equipments[i];
-    equipment->status = AVAILABLE; // Default to AVAILABLE
+
+    equipment->status = AVAILABLE;
 
     for (int j = 0; j < reservationManager->numReservations; j++) {
       Reservation *reservation = &reservationManager->reservations[j];
@@ -28,44 +28,59 @@ void viewAllEquipments(EquipmentManager *equipmentManager,
           (reservation->status == PENDING ||
            reservation->status == CONFIRMED)) {
         equipment->status = RESERVED;
-        break; // No need to check further; the equipment is RESERVED
+        break;
       }
     }
+
+    if (equipment->status == AVAILABLE &&
+        equipment->equipmentStatus == UNDER_MAINTENANCE) {
+      equipment->status = INACTIVE;
+    }
+
+    const char *availability = (equipment->status == INACTIVE)
+                                   ? "Unavailable to use"
+                                   : "Available to use";
+
+    printf("ID         : %d\n", equipment->id);
+    printf("Name       : %s\n", equipment->name);
+    printf("Type       : %s\n", equipment->type);
+    printf("Availability: %s\n\n", availability);
   }
-  for (int i = 0; i < equipmentManager->numEquipments; i++) {
-    printf("ID      : %d\n", equipmentManager->equipments[i].id);
-    printf("Name    : %s\n", equipmentManager->equipments[i].name);
-    printf("Type    : %s\n", equipmentManager->equipments[i].type);
-    printf("Status: %s\n",
-           equipmentStatusToString(equipmentManager->equipments[i].status));
-    puts("----------------------------------------\n");
-  }
-  puts("End of Equipments list\n");
 }
+
 void addNewEquipment(EquipmentManager *equipmentManager) {
   if (!equipmentManager->fileLoaded) {
     puts("No equipments loaded, please load file first to create a new "
-         "equipment");
+         "equipment.");
     return;
   }
 
   int newId;
   char newName[MAX_EQUIPMENT_NAME];
   char newType[MAX_EQUIPMENT_TYPE];
-  int newStatus;
+  int newStatusInput;
   Equipment *temp = NULL;
-  int equipmentUsable;
+  Equipment newEquipment;
 
+  // Allocate or reallocate memory for the new equipment
   if (equipmentManager->equipments == NULL) {
     temp = malloc(sizeof(Equipment));
+    if (!temp) {
+      puts("Memory allocation failed!");
+      return;
+    }
     equipmentManager->equipments = temp;
-    newId = equipmentManager->nextId++;
   } else {
     temp = realloc(equipmentManager->equipments,
-                   (equipmentManager->nextId + 1) * sizeof(Equipment));
+                   (equipmentManager->numEquipments + 1) * sizeof(Equipment));
+    if (!temp) {
+      puts("Memory reallocation failed!");
+      return;
+    }
     equipmentManager->equipments = temp;
-    newId = equipmentManager->nextId++;
   }
+
+  newId = equipmentManager->nextId++;
 
   puts("----------------------------------------"
        "\n             Add New Equipment            \n"
@@ -73,20 +88,26 @@ void addNewEquipment(EquipmentManager *equipmentManager) {
 
   inputName(newName, MAX_EQUIPMENT_NAME, "Enter equipment name: ");
   inputSpaceType(newType, MAX_EQUIPMENT_TYPE, "Enter equipment type: ");
-  newStatus = getInt(
-      0, 2, "Enter status (0: Available, 1: Reserved, 2: Under Maintenance): ");
+  newStatusInput =
+      getInt(0, 1, "Enter status (0: Available, 1: Under Maintenance): ");
 
-  // Create new equipment
-  Equipment newEquipment;
+  // Initialize new equipment
   newEquipment.id = newId;
   strncpy(newEquipment.name, newName, MAX_EQUIPMENT_NAME - 1);
   strncpy(newEquipment.type, newType, MAX_EQUIPMENT_TYPE - 1);
   newEquipment.name[MAX_EQUIPMENT_NAME - 1] = '\0';
   newEquipment.type[MAX_EQUIPMENT_TYPE - 1] = '\0';
-  newEquipment.equipmentStatus = newStatus;
-  newEquipment.status = ACTIVE;
 
-  // Add to manager's array
+  // Map the input to the appropriate status
+  if (newStatusInput == 1) {
+    newEquipment.equipmentStatus = UNDER_MAINTENANCE;
+    newEquipment.status = INACTIVE;
+  } else {
+    newEquipment.equipmentStatus = AVAILABLE;
+    newEquipment.status = ACTIVE;
+  }
+
+  // Add the new equipment to the manager's array
   equipmentManager->equipments[equipmentManager->numEquipments] = newEquipment;
   equipmentManager->numEquipments++;
   equipmentManager->unsavedEquipments++;
@@ -133,11 +154,6 @@ void editEquipment(EquipmentManager *equipmentManager) {
     return;
   }
 
-  if (equipmentManager->equipments[foundEquipmentId].status == INACTIVE) {
-    puts("Cannot edit an inactive space.");
-    return;
-  }
-
   // Display current equipment details
   puts("\nCurrent equipment details:");
   printf("ID               : %d\n",
@@ -149,8 +165,6 @@ void editEquipment(EquipmentManager *equipmentManager) {
   printf("Equipment Status : %s\n",
          equipmentStatusToString(
              equipmentManager->equipments[foundEquipmentId].equipmentStatus));
-  printf("Status           : %s\n",
-         statusToString(equipmentManager->equipments[foundEquipmentId].status));
 
   // Ask for new inputs
   inputName(newName, MAX_NAME_LENGTH,
@@ -158,9 +172,9 @@ void editEquipment(EquipmentManager *equipmentManager) {
   inputSpaceType(newType, MAX_TYPE_LENGTH,
                  "Enter new equipment type or 0 to keep current: ");
   newEquipmentStatus =
-      getInt(0, 3,
+      getInt(0, 2,
              "Enter new status (0 to keep current, 1-Available, "
-             "2-Reserved, 3-Under Maintenance): ");
+             "2-Under Maintenance): ");
 
   if (strcmp(newName, "0") != 0) {
     strncpy(equipmentManager->equipments[foundEquipmentId].name, newName,
@@ -174,11 +188,14 @@ void editEquipment(EquipmentManager *equipmentManager) {
     equipmentManager->equipments[foundEquipmentId].type[MAX_TYPE_LENGTH - 1] =
         '\0';
   }
-  if (newEquipmentStatus > 0) {
+  if (newEquipmentStatus == 1) {
+    equipmentManager->equipments[foundEquipmentId].equipmentStatus = AVAILABLE;
+    equipmentManager->equipments[foundEquipmentId].status = ACTIVE;
+  } else if (newEquipmentStatus == 2) {
     equipmentManager->equipments[foundEquipmentId].equipmentStatus =
-        newEquipmentStatus - 1;
+        UNDER_MAINTENANCE;
+    equipmentManager->equipments[foundEquipmentId].status = INACTIVE;
   }
-
   equipmentManager->unsavedEquipments++;
 
   clearConsole();
